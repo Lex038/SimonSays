@@ -1,21 +1,16 @@
-<div id="simon-game" style="text-align:center; margin:20px;">
-  <h2>Simon Says</h2>
-  <p>Klik op "Start" en volg het patroon!</p>
-  <button onclick="startGame()">Start</button>
-  <div style="display:grid;grid-template-columns:repeat(2,150px);gap:10px;justify-content:center;margin-top:20px;">
-    <div id="green" class="btn" style="width:150px;height:150px;background:green;opacity:0.8;"></div>
-    <div id="red" class="btn" style="width:150px;height:150px;background:red;opacity:0.8;"></div>
-    <div id="yellow" class="btn" style="width:150px;height:150px;background:gold;opacity:0.8;"></div>
-    <div id="blue" class="btn" style="width:150px;height:150px;background:blue;opacity:0.8;"></div>
-  </div>
+<style>
+  /* Glow + scale animatie */
+  .btn {
+    transition: transform 0.2s, opacity 0.2s, box-shadow 0.2s;
+    border-radius: 15px;
+  }
 
-  <!-- 🔥 Progress bar -->
-  <div id="progress-container" style="width:80%;height:20px;background:#ddd;border-radius:10px;margin:20px auto;overflow:hidden;">
-    <div id="progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg, #4caf50, #81c784);transition:width 0.5s;"></div>
-  </div>
-
-  <p id="status" style="margin-top:15px;font-weight:bold;"></p>
-</div>
+  .btn.active {
+    opacity: 1 !important;
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.9);
+  }
+</style>
 
 <script>
   const buttons = ["green", "red", "yellow", "blue"];
@@ -33,15 +28,27 @@
     blue: 659.25
   };
 
+  const waveforms = {
+    green: "sine",
+    red: "square",
+    yellow: "triangle",
+    blue: "sawtooth"
+  };
+
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
   function playSound(color) {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === "suspended") {
+      audioCtx.resume();
+    }
+
     const oscillator = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
 
     oscillator.connect(gainNode);
     gainNode.connect(audioCtx.destination);
 
-    oscillator.type = "sine";
+    oscillator.type = waveforms[color];
     oscillator.frequency.value = sounds[color];
     oscillator.start();
 
@@ -66,11 +73,8 @@
     playerSequence = [];
     level++;
     document.getElementById("status").textContent = "Level " + level;
-
-    // update progress bar
     updateProgress();
 
-    // Winconditie (nu 18)
     if (level > goalLevel) {
       gameActive = false;
       alert("Wanneer de klok negen slaat en avond in het duister baadt,\n" +
@@ -92,13 +96,15 @@
       playSound(sequence[i]);
       i++;
       if (i >= sequence.length) clearInterval(interval);
-    }, 500); // ⚡️ 2x zo snel
+    }, 500);
   }
 
   function highlight(color) {
     const el = document.getElementById(color);
-    el.style.opacity = "1";
-    setTimeout(() => { el.style.opacity = "0.8"; }, 500);
+    el.classList.add("active");
+    setTimeout(() => {
+      el.classList.remove("active");
+    }, 500);
   }
 
   document.querySelectorAll(".btn").forEach(btn => {
