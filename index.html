@@ -8,6 +8,12 @@
     <div id="yellow" class="btn" style="width:150px;height:150px;background:gold;opacity:0.8;"></div>
     <div id="blue" class="btn" style="width:150px;height:150px;background:blue;opacity:0.8;"></div>
   </div>
+
+  <!-- 🔥 Progress bar -->
+  <div id="progress-container" style="width:80%;height:20px;background:#ddd;border-radius:10px;margin:20px auto;overflow:hidden;">
+    <div id="progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg, #4caf50, #81c784);transition:width 0.5s;"></div>
+  </div>
+
   <p id="status" style="margin-top:15px;font-weight:bold;"></p>
 </div>
 
@@ -18,12 +24,13 @@
   let level = 0;
   let gameActive = false;
 
-  // Nieuwe frequenties (C5, D5, E5)
+  const goalLevel = 18;
+
   const sounds = {
     green: 523.25,  // C5
     red: 587.33,    // D5
     yellow: 659.25, // E5
-    blue: 659.25    // ook E5
+    blue: 659.25
   };
 
   function playSound(color) {
@@ -38,7 +45,6 @@
     oscillator.frequency.value = sounds[color];
     oscillator.start();
 
-    // toon ca. 0.6 sec
     gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
 
@@ -50,6 +56,7 @@
     playerSequence = [];
     level = 0;
     gameActive = true;
+    updateProgress();
     nextRound();
   }
 
@@ -60,8 +67,11 @@
     level++;
     document.getElementById("status").textContent = "Level " + level;
 
-    // Winconditie
-    if (level > 20) {
+    // update progress bar
+    updateProgress();
+
+    // Winconditie (nu 18)
+    if (level > goalLevel) {
       gameActive = false;
       alert("Wanneer de klok negen slaat en avond in het duister baadt,\n" +
             "verschijnt de haan met vurig kam, die waakt waar voor hem stilte kwam.\n" +
@@ -82,7 +92,7 @@
       playSound(sequence[i]);
       i++;
       if (i >= sequence.length) clearInterval(interval);
-    }, 1000);
+    }, 500); // ⚡️ 2x zo snel
   }
 
   function highlight(color) {
@@ -110,7 +120,12 @@
       return;
     }
     if (playerSequence.length === sequence.length) {
-      setTimeout(nextRound, 1000);
+      setTimeout(nextRound, 800);
     }
+  }
+
+  function updateProgress() {
+    const progress = Math.min(level / goalLevel * 100, 100);
+    document.getElementById("progress-bar").style.width = progress + "%";
   }
 </script>
