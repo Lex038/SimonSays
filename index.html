@@ -5,25 +5,52 @@
   <title>Simon Says</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #111;
+      font-family: 'Trebuchet MS', sans-serif;
+      background: radial-gradient(circle at center, #0b0b0b 0%, #000 100%);
       color: #eee;
       text-align: center;
       margin: 0;
-      padding: 20px;
-    }
-
-    h1 {
-      margin-bottom: 10px;
+      padding: 0;
+      overflow: hidden;
     }
 
     /* --- WACHTWOORDSCHERM --- */
     #password-screen {
+      position: fixed;
+      inset: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      background: radial-gradient(circle at 50% 40%, #1a1a1a, #000);
+      box-shadow: inset 0 0 100px #000;
+      animation: fadeIn 2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    #password-screen h1 {
+      font-size: 2em;
+      color: #74b9ff;
+      text-shadow: 0 0 10px #0984e3;
+      margin-bottom: 10px;
+      overflow: hidden;
+      border-right: .1em solid #74b9ff;
+      white-space: nowrap;
+      animation: typing 3s steps(25, end), blink-caret .7s step-end infinite;
+    }
+
+    @keyframes typing {
+      from { width: 0 }
+      to { width: 100% }
+    }
+
+    @keyframes blink-caret {
+      from, to { border-color: transparent }
+      50% { border-color: #74b9ff; }
     }
 
     #password-screen input {
@@ -33,6 +60,16 @@
       border: none;
       outline: none;
       margin: 10px 0;
+      width: 200px;
+      text-align: center;
+      background: #222;
+      color: #eee;
+      box-shadow: 0 0 10px rgba(116,185,255,0.3);
+      transition: box-shadow 0.3s;
+    }
+
+    #password-screen input:focus {
+      box-shadow: 0 0 15px rgba(116,185,255,0.6);
     }
 
     #password-screen button {
@@ -43,16 +80,35 @@
       border-radius: 8px;
       color: white;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: background 0.3s, transform 0.2s;
     }
 
     #password-screen button:hover {
       background: #74b9ff;
+      transform: scale(1.05);
+    }
+
+    #password-error {
+      color: #ff7675;
+      margin-top: 10px;
+      display: none;
+    }
+
+    .shake {
+      animation: shake 0.4s;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-5px); }
     }
 
     /* --- SPEL --- */
     #game-container {
       display: none;
+      padding-top: 20px;
     }
 
     #game {
@@ -117,7 +173,7 @@
     <p>Voer het wachtwoord in om te spelen:</p>
     <input type="password" id="password-input" placeholder="Wachtwoord">
     <button onclick="checkPassword()">Verder</button>
-    <p id="password-error" style="color:#ff7675; display:none;">❌ Onjuist wachtwoord</p>
+    <p id="password-error">❌ Onjuist wachtwoord</p>
   </div>
 
   <!-- Spel -->
@@ -146,13 +202,15 @@
     const correctPassword = "noordkromp";
 
     function checkPassword() {
-      const input = document.getElementById("password-input").value.trim().toLowerCase();
+      const input = document.getElementById("password-input");
       const error = document.getElementById("password-error");
-      if (input === correctPassword) {
+      if (input.value.trim().toLowerCase() === correctPassword) {
         document.getElementById("password-screen").style.display = "none";
         document.getElementById("game-container").style.display = "block";
       } else {
         error.style.display = "block";
+        input.classList.add("shake");
+        setTimeout(() => input.classList.remove("shake"), 400);
       }
     }
 
@@ -164,11 +222,12 @@
     let gameActive = false;
     const goalLevel = 18;
 
+    // ✅ Nieuwe frequenties
     const sounds = {
-      green: 440.00,  // C5
-      red: 523.25,    // D5
+      green: 440.00,  // A4
+      red: 523.25,    // C5
       yellow: 659.26, // E5
-      blue: 830.61
+      blue: 830.61    // G#5
     };
 
     const waveforms = {
@@ -243,9 +302,7 @@
     function highlight(color) {
       const el = document.getElementById(color);
       el.classList.add("active");
-      setTimeout(() => {
-        el.classList.remove("active");
-      }, 500);
+      setTimeout(() => el.classList.remove("active"), 500);
     }
 
     document.querySelectorAll(".btn").forEach(btn => {
