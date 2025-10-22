@@ -153,7 +153,7 @@ const sounds={green:440,red:523.25,yellow:659.26,blue:830.61};
 const waveforms={green:"sine",red:"square",yellow:"triangle",blue:"sawtooth"};
 let inGame=false;
 
-/* Oog animatie — trager en subtieler aan de rand */
+/* Oog animatie met subtiele jitter */
 let eyeInterval;
 function startEyeAnimation() {
   const eye = document.getElementById("red-eye");
@@ -161,8 +161,8 @@ function startEyeAnimation() {
   eye.style.opacity = 0;
 
   function blinkAndMove() {
-    const margin = 40; // afstand van rand
-    const edge = Math.floor(Math.random() * 4); // 0=links,1=boven,2=rechts,3=onder
+    const margin = 40; 
+    const edge = Math.floor(Math.random() * 4);
     let x = 0, y = 0;
 
     switch(edge){
@@ -174,14 +174,27 @@ function startEyeAnimation() {
 
     eye.style.left = x+"px";
     eye.style.top = y+"px";
-
-    // langzaam knipperen
-    eye.style.transition = "opacity 3s ease";
     eye.style.opacity = 1;
+    eye.style.transition = "opacity 3s ease";
 
-    setTimeout(()=>{ eye.style.opacity=0; }, 3000);
+    // subtiele jitter
+    let jitterCount = 0;
+    const jitterInterval = setInterval(()=>{
+      const dx = (Math.random()-0.5)*6; // max ±3px
+      const dy = (Math.random()-0.5)*6;
+      eye.style.transform = `translate(-50%, -50%) translate(${dx}px, ${dy}px)`;
+      jitterCount++;
+      if(jitterCount>8){ 
+        clearInterval(jitterInterval); 
+        eye.style.transform="translate(-50%,-50%)"; 
+      }
+    }, 300);
 
-    // veel minder vaak knipperen
+    setTimeout(()=>{ 
+      eye.style.opacity=0; 
+      eye.style.transform="translate(-50%,-50%)";
+    }, 3000);
+
     const nextTime = inGame ? 25000 + Math.random()*15000 : 12000 + Math.random()*8000;
     clearInterval(eyeInterval);
     eyeInterval = setInterval(blinkAndMove, nextTime);
@@ -196,7 +209,7 @@ function stopEyeAnimation(){
   if(eye) eye.style.opacity=0;
 }
 
-  startEyeAnimation();
+startEyeAnimation();
 
 /* Wachtwoordcontrole */
 function checkPassword(){
