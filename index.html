@@ -11,7 +11,7 @@
       text-align: center;
       margin: 0;
       padding: 0;
-      overflow: hidden;
+      overflow-x: hidden;
     }
 
     /* --- WACHTWOORDSCHERM --- */
@@ -25,11 +25,22 @@
       background: radial-gradient(circle at 50% 40%, #1a1a1a, #000);
       box-shadow: inset 0 0 100px #000;
       animation: fadeIn 2s ease;
+      z-index: 10;
     }
 
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
+    }
+
+    #password-screen.fade-out {
+      animation: portalFade 1.5s forwards;
+    }
+
+    @keyframes portalFade {
+      0% { opacity: 1; filter: brightness(1); }
+      50% { opacity: 1; filter: brightness(3); }
+      100% { opacity: 0; filter: brightness(0); }
     }
 
     #password-screen h1 {
@@ -198,20 +209,44 @@
   </div>
 
   <script>
-    /* ---------- WACHTWOORD ---------- */
     const correctPassword = "noordkromp";
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
     function checkPassword() {
       const input = document.getElementById("password-input");
       const error = document.getElementById("password-error");
       if (input.value.trim().toLowerCase() === correctPassword) {
-        document.getElementById("password-screen").style.display = "none";
-        document.getElementById("game-container").style.display = "block";
+        playUnlockMelody();
+        const screen = document.getElementById("password-screen");
+        screen.classList.add("fade-out");
+        setTimeout(() => {
+          screen.style.display = "none";
+          document.getElementById("game-container").style.display = "block";
+          document.getElementById("game-container").scrollIntoView({ behavior: "smooth" });
+        }, 1500);
       } else {
         error.style.display = "block";
         input.classList.add("shake");
         setTimeout(() => input.classList.remove("shake"), 400);
       }
+    }
+
+    // 🎶 Korte mysterieuze melodie bij toegang
+    function playUnlockMelody() {
+      const notes = [440, 523.25, 659.26, 523.25, 392]; // A - C - E - C - G
+      const now = audioCtx.currentTime;
+      notes.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.value = freq;
+        osc.type = "sine";
+        gain.gain.setValueAtTime(0.2, now + i * 0.25);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.25 + 0.4);
+        osc.start(now + i * 0.25);
+        osc.stop(now + i * 0.25 + 0.4);
+      });
     }
 
     /* ---------- SPEL ---------- */
@@ -222,12 +257,11 @@
     let gameActive = false;
     const goalLevel = 18;
 
-    // ✅ Nieuwe frequenties
     const sounds = {
-      green: 440.00,  // A4
-      red: 523.25,    // C5
-      yellow: 659.26, // E5
-      blue: 830.61    // G#5
+      green: 440.00,
+      red: 523.25,
+      yellow: 659.26,
+      blue: 830.61
     };
 
     const waveforms = {
@@ -237,25 +271,18 @@
       blue: "sawtooth"
     };
 
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
     function playSound(color) {
       if (audioCtx.state === "suspended") audioCtx.resume();
-
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-
-      oscillator.type = waveforms[color];
-      oscillator.frequency.value = sounds[color];
-      oscillator.start();
-
-      gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
-
-      oscillator.stop(audioCtx.currentTime + 0.6);
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.type = waveforms[color];
+      osc.frequency.value = sounds[color];
+      osc.start();
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+      osc.stop(audioCtx.currentTime + 0.6);
     }
 
     function startGame() {
@@ -269,7 +296,6 @@
 
     function nextRound() {
       if (!gameActive) return;
-
       playerSequence = [];
       level++;
       document.getElementById("status").textContent = "Level " + level;
