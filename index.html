@@ -32,30 +32,30 @@ body{
   75%{transform:translateY(2%) rotate(-1deg);opacity:0.08}
   100%{transform:translateY(0) rotate(0deg);opacity:0.06}
 }
-#red-eye {
+#red-eye{
   position: fixed;
-  width: 44px;
-  height: 44px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  background: rgba(255, 0, 0, 0.32);
+  background: rgba(255, 0, 0, 0.35);
   filter: blur(6px);
   opacity: 0;
-  z-index: 12;
+  z-index: 9999;
   pointer-events: none;
-  transition: opacity 0.45s;
-  /* beginpositie, zodat hij niet buiten beeld staat */
+  transition: opacity 0.4s ease;
   left: 50%;
   top: 50%;
+  transform: translate(-50%, -50%);
 }
 #password-screen{
   position:fixed; inset:0; display:flex; flex-direction:column;
   align-items:center; justify-content:center; z-index:14;
-  background:linear-gradient(180deg,rgba(0,0,0,0.55),rgba(0,0,0,0.8));
+  background:radial-gradient(circle at center,rgba(0,0,0,0.8) 0%,rgba(0,0,0,0.95) 100%);
   padding:24px; box-sizing:border-box;
 }
 #password-screen input{
   width:220px; padding:10px; font-size:16px; border-radius:8px; border:none;
-  background:#222; color:#fff; text-align:center; outline:none;
+  background:#111; color:#fff; text-align:center; outline:none;
   box-shadow:0 0 12px rgba(255,0,0,0.06);
 }
 #password-screen .btn{
@@ -155,43 +155,31 @@ let inGame=false;
 
 /* Oog animatie */
 let eyeInterval;
-function startEyeAnimation() {
-  const eye = document.getElementById("red-eye");
-
-  // Geen positie-animatie, alleen flits op willekeurige plekken
-  function blinkAndMove() {
-    const maxX = window.innerWidth - 44;
-    const maxY = window.innerHeight - 44;
-    const x = Math.floor(Math.random() * maxX);
-    const y = Math.floor(Math.random() * maxY);
-
-    // Zet direct de nieuwe positie zonder transitie
-    eye.style.transition = "opacity 0.45s";
-    eye.style.left = x + "px";
-    eye.style.top = y + "px";
-
-    // Flits
-    eye.style.opacity = 0.9;
-    setTimeout(() => {
-      eye.style.opacity = 0;
-    }, 350);
-
-    // Herhaal afhankelijk van fase
-    const nextTime = inGame
-      ? 5000 + Math.random() * 7000  // trager tijdens spel
-      : 1000 + Math.random() * 800;  // sneller bij wachtwoord
+function startEyeAnimation(){
+  const eye=document.getElementById("red-eye");
+  if(!eye)return;
+  eye.style.opacity=0;
+  function blinkAndMove(){
+    const maxX=window.innerWidth-50;
+    const maxY=window.innerHeight-50;
+    const x=Math.floor(Math.random()*maxX);
+    const y=Math.floor(Math.random()*maxY);
+    eye.style.left=x+"px";
+    eye.style.top=y+"px";
+    eye.style.opacity=1;
+    setTimeout(()=>{eye.style.opacity=0;},350);
+    const nextTime=inGame?5000+Math.random()*7000:1000+Math.random()*800;
     clearInterval(eyeInterval);
-    eyeInterval = setInterval(blinkAndMove, nextTime);
+    eyeInterval=setInterval(blinkAndMove,nextTime);
   }
-
   blinkAndMove();
 }
-
-function stopEyeAnimation() {
+function stopEyeAnimation(){
   clearInterval(eyeInterval);
-  const eye = document.getElementById("red-eye");
-  if (eye) eye.style.opacity = 0;
+  const eye=document.getElementById("red-eye");
+  if(eye) eye.style.opacity=0;
 }
+startEyeAnimation();
 
 /* Wachtwoordcontrole */
 function checkPassword(){
