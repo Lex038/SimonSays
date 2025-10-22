@@ -34,17 +34,16 @@ body{
 }
 #red-eye{
   position: fixed;
-  width: 30px;
+  width: 30px;              
   height: 30px;
   border-radius: 50%;
   background: rgba(255,50,50,0.85); /* fel rood */
   box-shadow: 0 0 12px rgba(255,50,50,0.6);
-  filter: blur(0px);
+  filter: blur(0px);        /* scherp */
   opacity: 0;
   z-index: 9999;
   pointer-events: none;
-  /* alleen opacity transition */
-  transition: opacity 3s ease;
+  transition: opacity 3s ease; /* langzaam knipperen */
 }
 #password-screen{
   position:fixed; inset:0; display:flex; flex-direction:column;
@@ -152,7 +151,7 @@ const sounds={green:440,red:523.25,yellow:659.26,blue:830.61};
 const waveforms={green:"sine",red:"square",yellow:"triangle",blue:"sawtooth"};
 let inGame=false;
 
-/* Oog animatie stil, alleen knipperen langs rand */
+/* Oog animatie stilstaand */
 let eyeInterval;
 function startEyeAnimation() {
   const eye = document.getElementById("red-eye");
@@ -165,21 +164,17 @@ function startEyeAnimation() {
     let x = 0, y = 0;
 
     switch(edge){
-      case 0: x = Math.random()*margin; y = Math.random()*window.innerHeight; break; // links
-      case 1: x = Math.random()*window.innerWidth; y = Math.random()*margin; break; // boven
-      case 2: x = window.innerWidth - margin - 30; y = Math.random()*window.innerHeight; break; // rechts
-      case 3: x = Math.random()*window.innerWidth; y = window.innerHeight - margin - 30; break; // onder
+      case 0: x = Math.random()*margin; y = Math.random()*window.innerHeight; break;
+      case 1: x = Math.random()*window.innerWidth; y = Math.random()*margin; break;
+      case 2: x = window.innerWidth - margin - 30; y = Math.random()*window.innerHeight; break;
+      case 3: x = Math.random()*window.innerWidth; y = window.innerHeight - margin - 30; break;
     }
 
-    // direct positioneren, geen transition
     eye.style.left = x + "px";
     eye.style.top = y + "px";
-
-    // knipperen via opacity
     eye.style.opacity = 1;
     setTimeout(()=>{ eye.style.opacity = 0; }, 3000);
 
-    // interval voor volgende knipper
     const nextTime = inGame ? 30000 + Math.random()*15000 : 15000 + Math.random()*5000;
     clearInterval(eyeInterval);
     eyeInterval = setInterval(blinkAndMove, nextTime);
@@ -187,162 +182,96 @@ function startEyeAnimation() {
 
   blinkAndMove();
 }
-
 function stopEyeAnimation(){
   clearInterval(eyeInterval);
   const eye = document.getElementById("red-eye");
   if(eye) eye.style.opacity = 0;
 }
-
 startEyeAnimation();
-  
-/* Wachtwoordcontrole */
-function checkPassword(){
-  const input=document.getElementById("password-input");
-  const error=document.getElementById("password-error");
-  const portal=document.getElementById("portal");
-  const wave=document.getElementById("energy-wave");
-  const haan=document.getElementById("haan-bg");
-  if(input.value.trim().toLowerCase()===correctPassword){
-    if(audioCtx.state==="suspended") audioCtx.resume();
-    portal.classList.add("active");
-    wave.classList.add("active");
-    haan.classList.add("come-forward");
-    stopEyeAnimation();
-    if(navigator.vibrate) navigator.vibrate([200,100,200,100,200]);
-    const screen=document.getElementById("password-screen");
-    screen.style.transition="opacity 1.2s, transform 1.2s";
-    screen.style.opacity=0; screen.style.transform="scale(1.05)";
-    setTimeout(()=>{
-      screen.style.display="none";
-      const gameContainer=document.getElementById("game-container");
-      gameContainer.style.display="block";
-      inGame=true; startEyeAnimation();
-      setTimeout(()=>{portal.classList.remove("active");wave.classList.remove("active");},1700);
-    },1200);
-  }else{
-    if(audioCtx.state==="suspended") audioCtx.resume();
-    playCreepyError();
-    if(navigator.vibrate) navigator.vibrate([120]);
-    document.getElementById("red-flash").classList.add("active");
-    error.style.display="block";
-    setTimeout(()=>{document.getElementById("red-flash").classList.remove("active");},600);
-  }
-}
 
-/* Geluiden */
-function playSound(color){
-  const now=audioCtx.currentTime;
-  const o=audioCtx.createOscillator(); const g=audioCtx.createGain();
-  o.type=waveforms[color]; o.frequency.setValueAtTime(sounds[color],now);
-  g.gain.setValueAtTime(0.22,now); g.gain.exponentialRampToValueAtTime(0.001,now+0.55);
-  o.connect(g).connect(audioCtx.destination);
-  o.start(now); o.stop(now+0.55);
-}
-function playCreepyError(){
-  const now=audioCtx.currentTime;
-  for(let i=0;i<6;i++){
-    const o=audioCtx.createOscillator(); const g=audioCtx.createGain();
-    o.type="sawtooth";
-    o.frequency.setValueAtTime(120+Math.random()*220,now+i*0.05);
-    g.gain.setValueAtTime(0.18,now+i*0.05);
-    g.gain.exponentialRampToValueAtTime(0.001,now+i*0.05+0.18);
-    o.connect(g).connect(audioCtx.destination);
-    o.start(now+i*0.05); o.stop(now+i*0.05+0.18);
+/* Wachtwoord check */
+function checkPassword(){
+  const val=document.getElementById("password-input").value.trim();
+  if(val===correctPassword){
+    document.getElementById("password-screen").style.display="none";
+    document.getElementById("game-container").style.display="block";
+    inGame=true;
+    startEyeAnimation();
+  } else {
+    document.getElementById("password-error").style.display="block";
+    // rode flits
+    const flash=document.getElementById("red-flash");
+    flash.classList.add("active");
+    setTimeout(()=>{flash.classList.remove("active");},450);
+    if(navigator.vibrate) navigator.vibrate([150,50,150]);
   }
-}
-function playGameError(){
-  const now=audioCtx.currentTime;
-  const o=audioCtx.createOscillator(); const g=audioCtx.createGain();
-  o.type="sawtooth"; o.frequency.setValueAtTime(150,now);
-  o.frequency.exponentialRampToValueAtTime(60,now+0.28);
-  g.gain.setValueAtTime(0.32,now);
-  g.gain.exponentialRampToValueAtTime(0.001,now+0.28);
-  o.connect(g).connect(audioCtx.destination);
-  o.start(now); o.stop(now+0.28);
-}
-function playVictorySound(){
-  const now=audioCtx.currentTime; const freqs=[220,330,440];
-  freqs.forEach((f,i)=>{
-    const o=audioCtx.createOscillator(); const g=audioCtx.createGain();
-    o.type="triangle"; o.frequency.setValueAtTime(f,now+i*0.12);
-    g.gain.setValueAtTime(0.22,now+i*0.12);
-    g.gain.exponentialRampToValueAtTime(0.001,now+i*0.12+0.9);
-    o.connect(g).connect(audioCtx.destination);
-    o.start(now+i*0.12); o.stop(now+i*0.12+0.9);
-  });
 }
 
 /* Simon Says */
 function startGame(){
-  sequence=[];playerSequence=[];level=0;gameActive=true;updateProgress();nextRound();
+  sequence=[];playerSequence=[];level=0;gameActive=true;
+  document.getElementById("status").textContent="Let op de sequentie...";
+  nextLevel();
 }
-function nextRound(){
-  if(!gameActive)return;
-  playerSequence=[];level++;
-  document.getElementById("status").textContent="Level "+level;
-  updateProgress();
-  if(level>goalLevel){
-    gameActive=false;
-    playVictorySound();
-    if(navigator.vibrate) navigator.vibrate([100,100,100,300]);
-    const st=document.getElementById("status");
-    st.textContent="Je hebt het raadsel onthuld!";
-    st.classList.add("sparkle");
-    setTimeout(()=>{
-      alert("Wanneer de klok negen slaat en avond in het duister baadt,\nverschijnt de haan met vurig kam, die waakt waar voor hem stilte kwam.\nWie hem ontmoet op 't uur der nacht, zal dragen last tot morgengracht.");
-    },200);
-    return;
-  }
+function nextLevel(){
+  playerSequence=[];
+  level++;
   sequence.push(buttons[Math.floor(Math.random()*4)]);
-  playSequence();
+  showSequence();
 }
-function playSequence(){
-  let i=0;
-  const interval=setInterval(()=>{
-    highlight(sequence[i]); playSound(sequence[i]); i++;
-    if(i>=sequence.length) clearInterval(interval);
-  },250);
-}
-function highlight(color){
-  const el=document.getElementById(color);
-  if(!el)return;
-  el.classList.add("active");
-  setTimeout(()=>el.classList.remove("active"),225);
-}
-document.querySelectorAll(".btn").forEach(btn=>{
-  btn.addEventListener("click",e=>{
-    if(!gameActive)return;
-    const color=e.currentTarget.id;
-    playerSequence.push(color);
-    highlight(color); playSound(color);
-    checkInput();
+function showSequence(){
+  let delay=0;
+  sequence.forEach((btn,i)=>{
+    setTimeout(()=>{activateButton(btn);playSound(btn)},i*500); // dubbel tempo
   });
+  setTimeout(()=>{document.getElementById("status").textContent="Jouw beurt";},sequence.length*500);
+}
+function activateButton(btn){
+  const el=document.getElementById(btn);
+  el.classList.add("active");
+  setTimeout(()=>{el.classList.remove("active");},300);
+}
+function playSound(btn){
+  const osc=audioCtx.createOscillator();
+  const gain=audioCtx.createGain();
+  osc.type=waveforms[btn];
+  osc.frequency.value=sounds[btn];
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  gain.gain.setValueAtTime(0.2,audioCtx.currentTime);
+  osc.start(); osc.stop(audioCtx.currentTime+0.3);
+}
+buttons.forEach(b=>{
+  document.getElementById(b).addEventListener("click",()=>{playerClick(b)});
 });
-function checkInput(){
-  const idx=playerSequence.length-1;
-  if(playerSequence[idx]!==sequence[idx]){
-    document.getElementById("status").textContent="❌ Fout! Probeer opnieuw.";
-    playGameError();
-    if(navigator.vibrate) navigator.vibrate([120,80,120]);
-    gameActive=false;
-    return;
+function playerClick(btn){
+  if(!gameActive) return;
+  playerSequence.push(btn);
+  activateButton(btn); playSound(btn);
+  const index=playerSequence.length-1;
+  if(playerSequence[index]!==sequence[index]){
+    gameOver(); return;
   }
   if(playerSequence.length===sequence.length){
-    setTimeout(nextRound,350);
+    if(level===goalLevel){
+      gameWin(); return;
+    } else {
+      setTimeout(nextLevel,500);
+    }
   }
 }
-function updateProgress(){
-  const progress=Math.min(level/goalLevel*100,100);
-  document.getElementById("progress-bar").style.width=progress+"%";
+function gameOver(){
+  gameActive=false;
+  document.getElementById("status").textContent="Fout! Probeer opnieuw.";
+  if(navigator.vibrate) navigator.vibrate([300,100,300]);
 }
-document.addEventListener("click",function resumeOnce(){
-  if(audioCtx.state==="suspended") audioCtx.resume();
-  document.removeEventListener("click",resumeOnce);
-});
-document.getElementById("password-input").addEventListener("keydown",e=>{
-  if(e.key==="Enter") checkPassword();
-});
+function gameWin(){
+  gameActive=false;
+  document.getElementById("status").textContent="🎉 Wanneer de klok negen slaat en avond in het duister baadt, verschijnt de haan met vurig kam, die waakt waar voor hem stilte kwam. Wie hem ontmoet op 't uur der nacht, zal dragen last tot morgengracht.";
+  document.getElementById("status").classList.add("sparkle");
+  document.getElementById("portal").classList.add("active");
+  document.getElementById("energy-wave").classList.add("active");
+  if(navigator.vibrate) navigator.vibrate([200,100,200,100,250]);
+}
 </script>
 </body>
 </html>
