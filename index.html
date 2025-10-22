@@ -171,17 +171,16 @@ function startEyeAnimation() {
       case 3: x = Math.random()*window.innerWidth; y = window.innerHeight - margin - 30; break; // onder
     }
 
+    // direct positioneren, geen transition
     eye.style.left = x + "px";
     eye.style.top = y + "px";
+
+    // knipperen via opacity
     eye.style.opacity = 1;
-    eye.style.transition = "opacity 3s ease";
+    setTimeout(()=>{ eye.style.opacity = 0; }, 3000);
 
-    setTimeout(() => {
-      eye.style.opacity = 0;
-    }, 3000);
-
-    // minder vaak knipperen
-    const nextTime = inGame ? 25000 + Math.random()*15000 : 12000 + Math.random()*8000;
+    // interval voor volgende knipper
+    const nextTime = inGame ? 30000 + Math.random()*15000 : 15000 + Math.random()*5000;
     clearInterval(eyeInterval);
     eyeInterval = setInterval(blinkAndMove, nextTime);
   }
