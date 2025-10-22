@@ -12,8 +12,6 @@ body{
   color:#eee;text-align:center;overflow:hidden;transition:transform .1s;
   -webkit-tap-highlight-color:transparent;
 }
-
-/* Haan achtergrond (subtiel aanwezig) */
 #haan-bg{
   position:fixed; inset:0;
   background: url('https://upload.wikimedia.org/wikipedia/commons/2/2e/Rooster_silhouette.svg') no-repeat center/contain;
@@ -24,16 +22,12 @@ body{
   opacity:0.42; transform: scale(1.05) translateY(-8%);
   filter: drop-shadow(0 0 40px rgba(255,10,10,0.35));
 }
-
-/* Rode pulserende oog (wachtwoordscherm) */
 #red-eye{
   position:fixed; inset:0; z-index:12; pointer-events:none;
   width:44px; height:44px; background:rgba(255,0,0,0.32);
   border-radius:50%; opacity:0; filter: blur(6px);
   transition: opacity .45s, transform .7s;
 }
-
-/* Wachtwoord scherm */
 #password-screen{
   position:fixed; inset:0;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -53,8 +47,6 @@ body{
 }
 #password-screen .btn:hover{transform:scale(1.03); background:#c22;}
 #password-error{color:#ff8b8b; margin-top:10px; display:none;}
-
-/* Portal + energy wave + red flash */
 #portal{
   position:fixed; top:50%; left:50%; width:120px; height:120px; border-radius:50%;
   transform:translate(-50%,-50%) scale(0); border:4px solid rgba(255,50,50,0.9);
@@ -85,7 +77,6 @@ body{
 #red-flash.active{ animation:redflash .45s; }
 @keyframes redflash{0%{opacity:.8}50%{opacity:.9}100%{opacity:0}}
 
-/* Game */
 #game-container{ display:none; z-index:5; position:relative; padding:22px; }
 #game{ display:grid; grid-template-columns:repeat(2,140px); grid-template-rows:repeat(2,140px); gap:14px; justify-content:center; margin:26px auto; }
 .btn{ width:140px; height:140px; border-radius:14px; opacity:.86; cursor:pointer; transition: transform .14s, box-shadow .18s, opacity .12s; box-shadow: 0 3px 6px rgba(0,0,0,0.35); }
@@ -97,7 +88,6 @@ body{
 #status{ margin-top:8px; font-size:16px; min-height:28px; }
 #status.sparkle{ animation:sparkle 2s infinite alternate; color:#fff; text-shadow:0 0 6px #ffaeae,0 0 12px #ff7b7b; }
 @keyframes sparkle{ from{filter: hue-rotate(0deg);} to{ filter: hue-rotate(360deg);} }
-
 @media (max-width:420px){ #game{ grid-template-columns:repeat(2,120px); grid-template-rows:repeat(2,120px); gap:10px; } .btn{ width:120px; height:120px; border-radius:12px; } }
 </style>
 </head>
@@ -131,318 +121,184 @@ body{
 </div>
 
 <script>
-/* ====================
-  Instellingen & state
-==================== */
-const correctPassword = "noordkromp";
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-const buttons = ["green","red","yellow","blue"];
-let sequence = [], playerSequence = [], level = 0, gameActive = false;
-const goalLevel = 18;
-const sounds = { green:440, red:523.25, yellow:659.26, blue:830.61 };
-const waveforms = { green:"sine", red:"square", yellow:"triangle", blue:"sawtooth" };
+const correctPassword="noordkromp";
+const audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+const buttons=["green","red","yellow","blue"];
+let sequence=[], playerSequence=[], level=0, gameActive=false;
+const goalLevel=18;
+const sounds={green:440, red:523.25, yellow:659.26, blue:830.61};
+const waveforms={green:"sine", red:"square", yellow:"triangle", blue:"sawtooth"};
 
-/* --------------------
-  Rode oog animatie (willekeurig bewegen + opduiken/verdwijnen)
--------------------- */
+/* Oog animatie: knipperen op 1 plek, verplaatst daarna */
 let eyeInterval;
 function startEyeAnimation(){
-  const eye = document.getElementById("red-eye");
-  function moveEye(){
-    // kies positie binnen viewport
-    const maxX = Math.max(0, window.innerWidth - 44);
-    const maxY = Math.max(0, window.innerHeight - 44);
-    const x = Math.floor(Math.random() * maxX);
-    const y = Math.floor(Math.random() * maxY);
-    eye.style.transform = `translate(${x}px, ${y}px)`;
-    // wissel tussen zichtbaar en bijna weg
-    eye.style.opacity = (Math.random() * 0.55) + 0.05;
-    // af en toe feller flitsen
-    if (Math.random() < 0.22) {
-      eye.style.opacity = 0.9;
-      eye.style.width = "60px"; eye.style.height = "60px";
-      setTimeout(()=>{ eye.style.width = "44px"; eye.style.height = "44px"; }, 300);
-    }
+  const eye=document.getElementById("red-eye");
+  function blinkAndMove(){
+    const maxX=window.innerWidth-44;
+    const maxY=window.innerHeight-44;
+    const x=Math.floor(Math.random()*maxX);
+    const y=Math.floor(Math.random()*maxY);
+    eye.style.transform=`translate(${x}px,${y}px)`;
+    eye.style.opacity=0.9;
+    setTimeout(()=>{ eye.style.opacity=0; }, 350);
   }
-  moveEye();
-  eyeInterval = setInterval(moveEye, 1200 + Math.random()*900);
+  blinkAndMove();
+  eyeInterval=setInterval(blinkAndMove, 1200+Math.random()*800);
 }
-function stopEyeAnimation(){
-  clearInterval(eyeInterval);
-  const eye = document.getElementById("red-eye");
-  if (eye) { eye.style.opacity = 0; }
-}
+function stopEyeAnimation(){ clearInterval(eyeInterval); document.getElementById("red-eye").style.opacity=0; }
 startEyeAnimation();
 
-/* --------------------
-  Wachtwoord controle / overgang
--------------------- */
+/* Wachtwoord scherm */
 function checkPassword(){
-  const input = document.getElementById("password-input");
-  const error = document.getElementById("password-error");
-  const portal = document.getElementById("portal");
-  const wave = document.getElementById("energy-wave");
-  const haan = document.getElementById("haan-bg");
-
-  if (input.value.trim().toLowerCase() === correctPassword) {
-    _ensureAudioStarted();
-
-    // visuals: portal, energy, haan komt naar voren
+  const input=document.getElementById("password-input");
+  const error=document.getElementById("password-error");
+  const portal=document.getElementById("portal");
+  const wave=document.getElementById("energy-wave");
+  const haan=document.getElementById("haan-bg");
+  if(input.value.trim().toLowerCase()===correctPassword){
+    if(audioCtx.state==="suspended") audioCtx.resume();
     portal.classList.add("active");
     wave.classList.add("active");
     haan.classList.add("come-forward");
-
-    // stop oog animatie (oog verdwijnt in licht)
     stopEyeAnimation();
-
-    // vibratie portal ritme
-    if (navigator.vibrate) navigator.vibrate([200,100,200,100,200]);
-
-    // lage brom die langzaam wegsterft
-    playDeepDroneFade(3.2);
-
-    // fade out wachtwoord scherm en open spel (direct zichtbaar)
-    const screen = document.getElementById("password-screen");
-    screen.style.transition = "opacity 1.2s, transform 1.2s";
-    screen.style.opacity = 0;
-    screen.style.transform = "scale(1.05)";
-    setTimeout(()=> {
-      screen.style.display = "none";
-      const gameContainer = document.getElementById("game-container");
-      gameContainer.style.display = "block";
-      gameContainer.setAttribute("aria-hidden", "false");
-      // start achtergrond drone (subtiel)
-      startBackgroundDrone();
-      // cleanup portal/wave classes after animations finish
-      setTimeout(()=> { portal.classList.remove("active"); wave.classList.remove("active"); }, 1700);
-    }, 1200);
-
-  } else {
-    _ensureAudioStarted();
+    if(navigator.vibrate) navigator.vibrate([200,100,200,100,200]);
+    const screen=document.getElementById("password-screen");
+    screen.style.transition="opacity 1.2s, transform 1.2s";
+    screen.style.opacity=0;
+    screen.style.transform="scale(1.05)";
+    setTimeout(()=>{
+      screen.style.display="none";
+      const gameContainer=document.getElementById("game-container");
+      gameContainer.style.display="block";
+      gameContainer.setAttribute("aria-hidden","false");
+      setTimeout(()=>{ portal.classList.remove("active"); wave.classList.remove("active"); }, 1700);
+    },1200);
+  }else{
+    if(audioCtx.state==="suspended") audioCtx.resume();
     playCreepyError();
-    if (navigator.vibrate) navigator.vibrate([120]);
+    if(navigator.vibrate) navigator.vibrate([120]);
     document.getElementById("red-flash").classList.add("active");
-    error.style.display = "block";
-    setTimeout(()=>{ document.getElementById("red-flash").classList.remove("active"); }, 600);
+    error.style.display="block";
+    setTimeout(()=>{ document.getElementById("red-flash").classList.remove("active"); },600);
   }
 }
 
-/* --------------------
-  Audio helpers
--------------------- */
-function _ensureAudioStarted(){
-  if (audioCtx.state === "suspended") audioCtx.resume().catch(()=>{});
-}
-
-/* Deep drone that fades over `duration` seconds */
-function playDeepDroneFade(duration = 3.2){
-  if (audioCtx.state === "suspended") audioCtx.resume();
-  const now = audioCtx.currentTime;
-  const o1 = audioCtx.createOscillator();
-  const o2 = audioCtx.createOscillator();
-  const g = audioCtx.createGain();
-  o1.type = "sawtooth"; o2.type = "triangle";
-  o1.frequency.setValueAtTime(55, now);
-  o2.frequency.setValueAtTime(110, now);
-  o2.detune.value = 18;
-  g.gain.setValueAtTime(0.38, now);
-  g.gain.exponentialRampToValueAtTime(0.02, now + duration);
-  const lp = audioCtx.createBiquadFilter(); lp.type = "lowpass";
-  lp.frequency.setValueAtTime(900, now); lp.frequency.exponentialRampToValueAtTime(220, now + duration);
-  o1.connect(g); o2.connect(g); g.connect(lp); lp.connect(audioCtx.destination);
-  o1.start(now); o2.start(now); o1.stop(now + duration + 0.05); o2.stop(now + duration + 0.05);
-}
-
-/* Creepy glitch error (password wrong) */
-function playCreepyError(){
-  if (audioCtx.state === "suspended") audioCtx.resume();
-  const now = audioCtx.currentTime;
-  for (let i = 0; i < 6; i++){
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    o.type = "sawtooth";
-    o.frequency.setValueAtTime(120 + Math.random()*220, now + i*0.05);
-    g.gain.setValueAtTime(0.18, now + i*0.05);
-    g.gain.exponentialRampToValueAtTime(0.001, now + i*0.05 + 0.18);
-    o.connect(g).connect(audioCtx.destination);
-    o.start(now + i*0.05); o.stop(now + i*0.05 + 0.18);
-  }
-}
-
-/* Simon button sounds */
+/* Geluid helpers */
 function playSound(color){
-  if (audioCtx.state === "suspended") audioCtx.resume();
-  const now = audioCtx.currentTime;
-  const o = audioCtx.createOscillator();
-  const g = audioCtx.createGain();
-  o.type = waveforms[color] || "sine";
-  o.frequency.setValueAtTime(sounds[color], now);
-  g.gain.setValueAtTime(0.22, now);
-  g.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+  const now=audioCtx.currentTime;
+  const o=audioCtx.createOscillator();
+  const g=audioCtx.createGain();
+  o.type=waveforms[color]||"sine";
+  o.frequency.setValueAtTime(sounds[color],now);
+  g.gain.setValueAtTime(0.22,now);
+  g.gain.exponentialRampToValueAtTime(0.001,now+0.55);
   o.connect(g).connect(audioCtx.destination);
-  o.start(now); o.stop(now + 0.55);
+  o.start(now); o.stop(now+0.55);
 }
-
-/* Game-specific error and victory sounds */
+function playCreepyError(){
+  const now=audioCtx.currentTime;
+  for(let i=0;i<6;i++){
+    const o=audioCtx.createOscillator();
+    const g=audioCtx.createGain();
+    o.type="sawtooth";
+    o.frequency.setValueAtTime(120+Math.random()*220, now+i*0.05);
+    g.gain.setValueAtTime(0.18, now+i*0.05);
+    g.gain.exponentialRampToValueAtTime(0.001, now+i*0.05+0.18);
+    o.connect(g).connect(audioCtx.destination);
+    o.start(now+i*0.05); o.stop(now+i*0.05+0.18);
+  }
+}
 function playGameError(){
-  if (audioCtx.state === "suspended") audioCtx.resume();
-  const now = audioCtx.currentTime;
-  const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
-  o.type = "sawtooth"; o.frequency.setValueAtTime(150, now);
-  o.frequency.exponentialRampToValueAtTime(60, now + 0.28);
-  g.gain.setValueAtTime(0.32, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
-  o.connect(g).connect(audioCtx.destination);
-  o.start(now); o.stop(now + 0.28);
+  const now=audioCtx.currentTime;
+  const o=audioCtx.createOscillator(); const g=audioCtx.createGain();
+  o.type="sawtooth"; o.frequency.setValueAtTime(150,now);
+  o.frequency.exponentialRampToValueAtTime(60,now+0.28);
+  g.gain.setValueAtTime(0.32,now); g.gain.exponentialRampToValueAtTime(0.001,now+0.28);
+  o.connect(g).connect(audioCtx.destination); o.start(now); o.stop(now+0.28);
 }
 function playVictorySound(){
-  if (audioCtx.state === "suspended") audioCtx.resume();
-  const now = audioCtx.currentTime;
-  // creepy but triumphant triad that fades
-  const freqs = [220, 330, 440];
-  freqs.forEach((f, i) => {
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    o.type = "triangle";
-    o.frequency.setValueAtTime(f, now + i*0.12);
-    g.gain.setValueAtTime(0.22, now + i*0.12);
-    g.gain.exponentialRampToValueAtTime(0.001, now + i*0.12 + 0.9);
+  const now=audioCtx.currentTime;
+  const freqs=[220,330,440];
+  freqs.forEach((f,i)=>{
+    const o=audioCtx.createOscillator();
+    const g=audioCtx.createGain();
+    o.type="triangle";
+    o.frequency.setValueAtTime(f,now+i*0.12);
+    g.gain.setValueAtTime(0.22,now+i*0.12);
+    g.gain.exponentialRampToValueAtTime(0.001,now+i*0.12+0.9);
     o.connect(g).connect(audioCtx.destination);
-    o.start(now + i*0.12); o.stop(now + i*0.12 + 0.9);
+    o.start(now+i*0.12); o.stop(now+i*0.12+0.9);
   });
 }
 
-/* --------------------
-  Simon Says logica
--------------------- */
-function startGame(){
-  sequence = []; playerSequence = []; level = 0; gameActive = true;
-  updateProgress(); nextRound();
-}
+/* Simon Says logica */
+function startGame(){ sequence=[]; playerSequence=[]; level=0; gameActive=true; updateProgress(); nextRound(); }
 function nextRound(){
-  if (!gameActive) return;
-  playerSequence = [];
+  if(!gameActive) return;
+  playerSequence=[];
   level++;
-  document.getElementById("status").textContent = "Level " + level;
+  document.getElementById("status").textContent="Level "+level;
   updateProgress();
-
-  if (level > goalLevel){
-    gameActive = false;
+  if(level>goalLevel){
+    gameActive=false;
     playVictorySound();
-    if (navigator.vibrate) navigator.vibrate([100,100,100,300]); // victory vibratie
-    const st = document.getElementById("status");
-    st.textContent = "Je hebt het raadsel onthuld!";
+    if(navigator.vibrate) navigator.vibrate([100,100,100,300]);
+    const st=document.getElementById("status");
+    st.textContent="Je hebt het raadsel onthuld!";
     st.classList.add("sparkle");
-    // keep the haan in background (it already is)
-    setTimeout(()=> {
-      alert("Wanneer de klok negen slaat en avond in het duister baadt,\nverschijnt de haan met vurig kam, die waakt waar voor hem stilte kwam.\nWie hem ontmoet op 't uur der nacht, zal dragen last tot morgengracht.");
-    }, 200);
-    // optionally stop background drone after victory
-    stopBackgroundDrone();
+    setTimeout(()=>{ alert("Wanneer de klok negen slaat en avond in het duister baadt,\nverschijnt de haan met vurig kam, die waakt waar voor hem stilte kwam.\nWie hem ontmoet op 't uur der nacht, zal dragen last tot morgengracht."); },200);
     return;
   }
-
-  // add next color and play sequence
   sequence.push(buttons[Math.floor(Math.random()*4)]);
   playSequence();
 }
-
 function playSequence(){
-  let i = 0;
-  const interval = setInterval(()=>{
-    highlight(sequence[i]); playSound(sequence[i]);
-    i++;
-    if (i >= sequence.length) clearInterval(interval);
-  }, 250); // dubbele snelheid (was 500)
+  let i=0;
+  const interval=setInterval(()=>{
+    highlight(sequence[i]); playSound(sequence[i]); i++;
+    if(i>=sequence.length) clearInterval(interval);
+  },250);
 }
-
 function highlight(color){
-  const el = document.getElementById(color);
-  if (!el) return;
+  const el=document.getElementById(color);
+  if(!el) return;
   el.classList.add("active");
-  setTimeout(()=> el.classList.remove("active"), 225);
+  setTimeout(()=> el.classList.remove("active"),225);
 }
-
-/* user clicks */
 document.querySelectorAll(".btn").forEach(btn=>{
   btn.addEventListener("click", e=>{
-    if (!gameActive) return;
-    const color = e.currentTarget.id;
+    if(!gameActive) return;
+    const color=e.currentTarget.id;
     playerSequence.push(color);
     highlight(color);
     playSound(color);
     checkInput();
   });
 });
-
 function checkInput(){
-  const idx = playerSequence.length - 1;
-  if (playerSequence[idx] !== sequence[idx]){
-    document.getElementById("status").textContent = "❌ Fout! Probeer opnieuw.";
+  const idx=playerSequence.length-1;
+  if(playerSequence[idx]!==sequence[idx]){
+    document.getElementById("status").textContent="❌ Fout! Probeer opnieuw.";
     playGameError();
-    if (navigator.vibrate) navigator.vibrate([120,80,120]); // fout vibratie
-    gameActive = false;
+    if(navigator.vibrate) navigator.vibrate([120,80,120]);
+    gameActive=false;
     return;
   }
-  if (playerSequence.length === sequence.length){
-    setTimeout(nextRound, 350);
+  if(playerSequence.length===sequence.length){
+    setTimeout(nextRound,350);
   }
 }
-
 function updateProgress(){
-  const progress = Math.min(level / goalLevel * 100, 100);
-  document.getElementById("progress-bar").style.width = progress + "%";
+  const progress=Math.min(level/goalLevel*100,100);
+  document.getElementById("progress-bar").style.width=progress+"%";
 }
 
-/* --------------------
-  Achtergronddrone (subtiel)
-  startBackgroundDrone() wordt aangeroepen zodra het spel zichtbaar wordt
-  stopBackgroundDrone() wordt aangeroepen bij einde/wins of wanneer je wilt stoppen
--------------------- */
-let bgDroneOsc1 = null, bgDroneOsc2 = null, bgDroneGain = null;
-function startBackgroundDrone(){
-  if (bgDroneOsc1) return; // al gestart
-  if (audioCtx.state === "suspended") audioCtx.resume();
-  const now = audioCtx.currentTime;
-  bgDroneOsc1 = audioCtx.createOscillator();
-  bgDroneOsc2 = audioCtx.createOscillator();
-  bgDroneGain = audioCtx.createGain();
-
-  bgDroneOsc1.type = "sine"; bgDroneOsc2.type = "triangle";
-  bgDroneOsc1.frequency.setValueAtTime(55, now);
-  bgDroneOsc2.frequency.setValueAtTime(110, now);
-  bgDroneGain.gain.setValueAtTime(0.06, now); // heel zacht
-
-  // slight phasing: detune second oscillator
-  bgDroneOsc2.detune.value = 6;
-
-  bgDroneOsc1.connect(bgDroneGain);
-  bgDroneOsc2.connect(bgDroneGain);
-  bgDroneGain.connect(audioCtx.destination);
-
-  bgDroneOsc1.start(now);
-  bgDroneOsc2.start(now);
-}
-
-function stopBackgroundDrone(){
-  try {
-    if (bgDroneOsc1) bgDroneOsc1.stop();
-    if (bgDroneOsc2) bgDroneOsc2.stop();
-  } catch(e){}
-  if (bgDroneGain) bgDroneGain.disconnect();
-  bgDroneOsc1 = null; bgDroneOsc2 = null; bgDroneGain = null;
-}
-
-/* --------------------
-  Init: ensure audio allowed on first user gesture
--------------------- */
 document.addEventListener("click", function resumeOnce(){
-  if (audioCtx && audioCtx.state === "suspended") audioCtx.resume().catch(()=>{});
+  if(audioCtx.state==="suspended") audioCtx.resume();
   document.removeEventListener("click", resumeOnce);
 });
-
-/* allow Enter to submit password */
 document.getElementById("password-input").addEventListener("keydown", (e)=>{
-  if (e.key === "Enter") checkPassword();
+  if(e.key==="Enter") checkPassword();
 });
 </script>
 </body>
