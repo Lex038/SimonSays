@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
 <meta charset="utf-8">
-<title>Simon Says — Haan van de Nacht</title>
+<title>Simon Says — De Haan</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
 :root{--bg1:#000;--bg2:#070707;--red:#ff3b3b}
@@ -14,25 +14,34 @@ body{
 }
 #haan-bg{
   position:fixed; inset:0;
-  background: url('https://upload.wikimedia.org/wikipedia/commons/2/2e/Rooster_silhouette.svg') no-repeat center/contain;
-  opacity:0.06; filter: drop-shadow(0 0 6px rgba(255,0,0,0.15));
-  z-index:1; pointer-events:none; transition:opacity 1s, transform 1s, filter 1s; transform: scale(1);
+  background:url('https://upload.wikimedia.org/wikipedia/commons/2/2e/Rooster_silhouette.svg') no-repeat center/contain;
+  opacity:0.06; filter:drop-shadow(0 0 6px rgba(255,0,0,0.15));
+  z-index:1; pointer-events:none;
+  transition:opacity 1s, transform 1s, filter 1s;
+  transform:scale(1);
+  animation: haanFloat 6s ease-in-out infinite;
 }
 #haan-bg.come-forward{
-  opacity:0.42; transform: scale(1.05) translateY(-8%);
-  filter: drop-shadow(0 0 40px rgba(255,10,10,0.35));
+  opacity:0.42; transform:scale(1.05) translateY(-8%);
+  filter:drop-shadow(0 0 40px rgba(255,10,10,0.35));
+}
+@keyframes haanFloat{
+  0%{transform:translateY(0) rotate(0deg);opacity:0.06}
+  25%{transform:translateY(-2%) rotate(1deg);opacity:0.08}
+  50%{transform:translateY(0) rotate(0deg);opacity:0.06}
+  75%{transform:translateY(2%) rotate(-1deg);opacity:0.08}
+  100%{transform:translateY(0) rotate(0deg);opacity:0.06}
 }
 #red-eye{
   position:fixed; inset:0; z-index:12; pointer-events:none;
   width:44px; height:44px; background:rgba(255,0,0,0.32);
-  border-radius:50%; opacity:0; filter: blur(6px);
-  transition: opacity .45s, transform .7s;
+  border-radius:50%; opacity:0; filter:blur(6px);
+  transition:opacity .45s, transform .7s;
 }
 #password-screen{
-  position:fixed; inset:0;
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  z-index:14;
-  background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.8));
+  position:fixed; inset:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; z-index:14;
+  background:linear-gradient(180deg,rgba(0,0,0,0.55),rgba(0,0,0,0.8));
   padding:24px; box-sizing:border-box;
 }
 #password-screen input{
@@ -42,8 +51,7 @@ body{
 }
 #password-screen .btn{
   margin-top:12px; padding:10px 18px; border-radius:8px; border:none; cursor:pointer;
-  background:#a00; color:#fff; font-size:16px;
-  transition:transform .12s, background .18s;
+  background:#a00; color:#fff; font-size:16px; transition:transform .12s, background .18s;
 }
 #password-screen .btn:hover{transform:scale(1.03); background:#c22;}
 #password-error{color:#ff8b8b; margin-top:10px; display:none;}
@@ -52,68 +60,74 @@ body{
   transform:translate(-50%,-50%) scale(0); border:4px solid rgba(255,50,50,0.9);
   box-shadow:0 0 40px 18px rgba(255,40,40,0.12); z-index:30; pointer-events:none; opacity:0;
 }
-#portal.active{ animation: portalOpen 1.6s forwards; }
+#portal.active{animation:portalOpen 1.6s forwards;}
 @keyframes portalOpen{
-  0%{ transform:translate(-50%,-50%) scale(0); opacity:0; filter:blur(0px);}
-  30%{ transform:translate(-50%,-50%) scale(1.1); opacity:1; }
-  60%{ transform:translate(-50%,-50%) scale(1.8) rotate(180deg); opacity:0.95; }
-  100%{ transform:translate(-50%,-50%) scale(3) rotate(360deg); opacity:0; }
+  0%{transform:translate(-50%,-50%) scale(0); opacity:0}
+  30%{transform:translate(-50%,-50%) scale(1.1); opacity:1}
+  60%{transform:translate(-50%,-50%) scale(1.8) rotate(180deg); opacity:.95}
+  100%{transform:translate(-50%,-50%) scale(3) rotate(360deg); opacity:0}
 }
 #energy-wave{
   position:fixed; inset:0; z-index:25; pointer-events:none; opacity:0;
-  background: radial-gradient(circle at 50% 48%, rgba(255,80,80,0.12), transparent 40%);
+  background:radial-gradient(circle at 50% 48%,rgba(255,80,80,0.12),transparent 40%);
 }
-#energy-wave.active{ animation: energySweep 1.6s ease-out forwards; }
+#energy-wave.active{animation:energySweep 1.6s ease-out forwards;}
 @keyframes energySweep{
-  0%{ transform:scale(.6); opacity:0; }
-  30%{ transform:scale(1.2); opacity:.6; }
-  60%{ transform:scale(2); opacity:.35; }
-  100%{ transform:scale(3.5); opacity:0; }
+  0%{transform:scale(.6);opacity:0}
+  30%{transform:scale(1.2);opacity:.6}
+  60%{transform:scale(2);opacity:.35}
+  100%{transform:scale(3.5);opacity:0}
 }
 #red-flash{
   position:fixed; inset:0; background:rgba(255,0,0,0.25);
   z-index:100; pointer-events:none; opacity:0;
 }
-#red-flash.active{ animation:redflash .45s; }
+#red-flash.active{animation:redflash .45s;}
 @keyframes redflash{0%{opacity:.8}50%{opacity:.9}100%{opacity:0}}
-
-#game-container{ display:none; z-index:5; position:relative; padding:22px; }
-#game{ display:grid; grid-template-columns:repeat(2,140px); grid-template-rows:repeat(2,140px); gap:14px; justify-content:center; margin:26px auto; }
-.btn{ width:140px; height:140px; border-radius:14px; opacity:.86; cursor:pointer; transition: transform .14s, box-shadow .18s, opacity .12s; box-shadow: 0 3px 6px rgba(0,0,0,0.35); }
-#green{ background:#00b894; } #red{ background:#d63031; } #yellow{ background:#fdcb6e; } #blue{ background:#0984e3; }
-.btn.active{ transform:scale(1.08); opacity:1; box-shadow:0 6px 20px rgba(255,255,255,0.09); }
-#controls{ margin-top:10px; }
-#progress{ width:78%; height:18px; background:#222; border-radius:10px; margin:14px auto; overflow:hidden; }
-#progress-bar{ height:100%; width:0; background: linear-gradient(90deg,#ff3b3b,#ffa500); transition:width .3s; }
-#status{ margin-top:8px; font-size:16px; min-height:28px; }
-#status.sparkle{ animation:sparkle 2s infinite alternate; color:#fff; text-shadow:0 0 6px #ffaeae,0 0 12px #ff7b7b; }
-@keyframes sparkle{ from{filter: hue-rotate(0deg);} to{ filter: hue-rotate(360deg);} }
-@media (max-width:420px){ #game{ grid-template-columns:repeat(2,120px); grid-template-rows:repeat(2,120px); gap:10px; } .btn{ width:120px; height:120px; border-radius:12px; } }
+#game-container{display:none;z-index:5;position:relative;padding:22px;}
+#game{
+  display:grid; grid-template-columns:repeat(2,140px); grid-template-rows:repeat(2,140px);
+  gap:14px; justify-content:center; margin:26px auto;
+}
+.btn{width:140px;height:140px;border-radius:14px;opacity:.86;cursor:pointer;
+  transition:transform .14s, box-shadow .18s, opacity .12s;
+  box-shadow:0 3px 6px rgba(0,0,0,0.35);
+}
+#green{background:#00b894} #red{background:#d63031} #yellow{background:#fdcb6e} #blue{background:#0984e3}
+.btn.active{transform:scale(1.08);opacity:1;box-shadow:0 6px 20px rgba(255,255,255,0.09)}
+#controls{margin-top:10px;}
+#progress{width:78%;height:18px;background:#222;border-radius:10px;margin:14px auto;overflow:hidden;}
+#progress-bar{height:100%;width:0;background:linear-gradient(90deg,#ff3b3b,#ffa500);transition:width .3s;}
+#status{margin-top:8px;font-size:16px;min-height:28px;}
+#status.sparkle{animation:sparkle 2s infinite alternate;color:#fff;text-shadow:0 0 6px #ffaeae,0 0 12px #ff7b7b;}
+@keyframes sparkle{from{filter:hue-rotate(0deg);}to{filter:hue-rotate(360deg);}}
+@media (max-width:420px){
+  #game{grid-template-columns:repeat(2,120px);grid-template-rows:repeat(2,120px);gap:10px;}
+  .btn{width:120px;height:120px;border-radius:12px;}
+}
 </style>
 </head>
 <body>
 
-<div id="haan-bg" aria-hidden="true"></div>
-<div id="red-eye" aria-hidden="true"></div>
-<div id="red-flash" aria-hidden="true"></div>
-<div id="portal" aria-hidden="true"></div>
-<div id="energy-wave" aria-hidden="true"></div>
+<div id="haan-bg"></div>
+<div id="red-eye"></div>
+<div id="red-flash"></div>
+<div id="portal"></div>
+<div id="energy-wave"></div>
 
-<!-- wachtwoord scherm -->
-<div id="password-screen" role="dialog" aria-modal="true">
-  <input id="password-input" type="password" placeholder="Wachtwoord" autocomplete="off" />
-  <button class="btn btn-password" onclick="checkPassword()">Verder</button>
-  <div id="password-error" style="display:none;">❌ Onjuist wachtwoord...</div>
+<div id="password-screen">
+  <input id="password-input" type="password" placeholder="Wachtwoord" autocomplete="off"/>
+  <button class="btn" onclick="checkPassword()">Verder</button>
+  <div id="password-error">❌ Onjuist wachtwoord...</div>
 </div>
 
-<!-- spel -->
-<div id="game-container" aria-hidden="true">
+<div id="game-container">
   <h2>Simon Says</h2>
-  <div id="game" role="application" aria-label="Simon knoppen">
-    <div id="green" class="btn" role="button" aria-label="groen"></div>
-    <div id="red" class="btn" role="button" aria-label="rood"></div>
-    <div id="yellow" class="btn" role="button" aria-label="geel"></div>
-    <div id="blue" class="btn" role="button" aria-label="blauw"></div>
+  <div id="game">
+    <div id="green" class="btn"></div>
+    <div id="red" class="btn"></div>
+    <div id="yellow" class="btn"></div>
+    <div id="blue" class="btn"></div>
   </div>
   <div id="controls"><button onclick="startGame()">▶️ Start</button></div>
   <div id="progress"><div id="progress-bar"></div></div>
@@ -124,12 +138,13 @@ body{
 const correctPassword="noordkromp";
 const audioCtx=new (window.AudioContext||window.webkitAudioContext)();
 const buttons=["green","red","yellow","blue"];
-let sequence=[], playerSequence=[], level=0, gameActive=false;
+let sequence=[],playerSequence=[],level=0,gameActive=false;
 const goalLevel=18;
-const sounds={green:440, red:523.25, yellow:659.26, blue:830.61};
-const waveforms={green:"sine", red:"square", yellow:"triangle", blue:"sawtooth"};
+const sounds={green:440,red:523.25,yellow:659.26,blue:830.61};
+const waveforms={green:"sine",red:"square",yellow:"triangle",blue:"sawtooth"};
+let inGame=false;
 
-/* Oog animatie: knipperen op 1 plek, verplaatst daarna */
+/* Oog animatie */
 let eyeInterval;
 function startEyeAnimation(){
   const eye=document.getElementById("red-eye");
@@ -140,15 +155,21 @@ function startEyeAnimation(){
     const y=Math.floor(Math.random()*maxY);
     eye.style.transform=`translate(${x}px,${y}px)`;
     eye.style.opacity=0.9;
-    setTimeout(()=>{ eye.style.opacity=0; }, 350);
+    setTimeout(()=>{eye.style.opacity=0;},350);
+    const nextTime=inGame?4000+Math.random()*6000:1200+Math.random()*800;
+    clearInterval(eyeInterval);
+    eyeInterval=setInterval(blinkAndMove,nextTime);
   }
   blinkAndMove();
-  eyeInterval=setInterval(blinkAndMove, 1200+Math.random()*800);
 }
-function stopEyeAnimation(){ clearInterval(eyeInterval); document.getElementById("red-eye").style.opacity=0; }
+function stopEyeAnimation(){
+  clearInterval(eyeInterval);
+  const eye=document.getElementById("red-eye");
+  if(eye) eye.style.opacity=0;
+}
 startEyeAnimation();
 
-/* Wachtwoord scherm */
+/* Wachtwoordcontrole */
 function checkPassword(){
   const input=document.getElementById("password-input");
   const error=document.getElementById("password-error");
@@ -164,14 +185,13 @@ function checkPassword(){
     if(navigator.vibrate) navigator.vibrate([200,100,200,100,200]);
     const screen=document.getElementById("password-screen");
     screen.style.transition="opacity 1.2s, transform 1.2s";
-    screen.style.opacity=0;
-    screen.style.transform="scale(1.05)";
+    screen.style.opacity=0; screen.style.transform="scale(1.05)";
     setTimeout(()=>{
       screen.style.display="none";
       const gameContainer=document.getElementById("game-container");
       gameContainer.style.display="block";
-      gameContainer.setAttribute("aria-hidden","false");
-      setTimeout(()=>{ portal.classList.remove("active"); wave.classList.remove("active"); }, 1700);
+      inGame=true; startEyeAnimation();
+      setTimeout(()=>{portal.classList.remove("active");wave.classList.remove("active");},1700);
     },1200);
   }else{
     if(audioCtx.state==="suspended") audioCtx.resume();
@@ -179,31 +199,27 @@ function checkPassword(){
     if(navigator.vibrate) navigator.vibrate([120]);
     document.getElementById("red-flash").classList.add("active");
     error.style.display="block";
-    setTimeout(()=>{ document.getElementById("red-flash").classList.remove("active"); },600);
+    setTimeout(()=>{document.getElementById("red-flash").classList.remove("active");},600);
   }
 }
 
-/* Geluid helpers */
+/* Geluiden */
 function playSound(color){
   const now=audioCtx.currentTime;
-  const o=audioCtx.createOscillator();
-  const g=audioCtx.createGain();
-  o.type=waveforms[color]||"sine";
-  o.frequency.setValueAtTime(sounds[color],now);
-  g.gain.setValueAtTime(0.22,now);
-  g.gain.exponentialRampToValueAtTime(0.001,now+0.55);
+  const o=audioCtx.createOscillator(); const g=audioCtx.createGain();
+  o.type=waveforms[color]; o.frequency.setValueAtTime(sounds[color],now);
+  g.gain.setValueAtTime(0.22,now); g.gain.exponentialRampToValueAtTime(0.001,now+0.55);
   o.connect(g).connect(audioCtx.destination);
   o.start(now); o.stop(now+0.55);
 }
 function playCreepyError(){
   const now=audioCtx.currentTime;
   for(let i=0;i<6;i++){
-    const o=audioCtx.createOscillator();
-    const g=audioCtx.createGain();
+    const o=audioCtx.createOscillator(); const g=audioCtx.createGain();
     o.type="sawtooth";
-    o.frequency.setValueAtTime(120+Math.random()*220, now+i*0.05);
-    g.gain.setValueAtTime(0.18, now+i*0.05);
-    g.gain.exponentialRampToValueAtTime(0.001, now+i*0.05+0.18);
+    o.frequency.setValueAtTime(120+Math.random()*220,now+i*0.05);
+    g.gain.setValueAtTime(0.18,now+i*0.05);
+    g.gain.exponentialRampToValueAtTime(0.001,now+i*0.05+0.18);
     o.connect(g).connect(audioCtx.destination);
     o.start(now+i*0.05); o.stop(now+i*0.05+0.18);
   }
@@ -213,17 +229,16 @@ function playGameError(){
   const o=audioCtx.createOscillator(); const g=audioCtx.createGain();
   o.type="sawtooth"; o.frequency.setValueAtTime(150,now);
   o.frequency.exponentialRampToValueAtTime(60,now+0.28);
-  g.gain.setValueAtTime(0.32,now); g.gain.exponentialRampToValueAtTime(0.001,now+0.28);
-  o.connect(g).connect(audioCtx.destination); o.start(now); o.stop(now+0.28);
+  g.gain.setValueAtTime(0.32,now);
+  g.gain.exponentialRampToValueAtTime(0.001,now+0.28);
+  o.connect(g).connect(audioCtx.destination);
+  o.start(now); o.stop(now+0.28);
 }
 function playVictorySound(){
-  const now=audioCtx.currentTime;
-  const freqs=[220,330,440];
+  const now=audioCtx.currentTime; const freqs=[220,330,440];
   freqs.forEach((f,i)=>{
-    const o=audioCtx.createOscillator();
-    const g=audioCtx.createGain();
-    o.type="triangle";
-    o.frequency.setValueAtTime(f,now+i*0.12);
+    const o=audioCtx.createOscillator(); const g=audioCtx.createGain();
+    o.type="triangle"; o.frequency.setValueAtTime(f,now+i*0.12);
     g.gain.setValueAtTime(0.22,now+i*0.12);
     g.gain.exponentialRampToValueAtTime(0.001,now+i*0.12+0.9);
     o.connect(g).connect(audioCtx.destination);
@@ -231,12 +246,13 @@ function playVictorySound(){
   });
 }
 
-/* Simon Says logica */
-function startGame(){ sequence=[]; playerSequence=[]; level=0; gameActive=true; updateProgress(); nextRound(); }
+/* Simon Says */
+function startGame(){
+  sequence=[];playerSequence=[];level=0;gameActive=true;updateProgress();nextRound();
+}
 function nextRound(){
-  if(!gameActive) return;
-  playerSequence=[];
-  level++;
+  if(!gameActive)return;
+  playerSequence=[];level++;
   document.getElementById("status").textContent="Level "+level;
   updateProgress();
   if(level>goalLevel){
@@ -246,7 +262,9 @@ function nextRound(){
     const st=document.getElementById("status");
     st.textContent="Je hebt het raadsel onthuld!";
     st.classList.add("sparkle");
-    setTimeout(()=>{ alert("Wanneer de klok negen slaat en avond in het duister baadt,\nverschijnt de haan met vurig kam, die waakt waar voor hem stilte kwam.\nWie hem ontmoet op 't uur der nacht, zal dragen last tot morgengracht."); },200);
+    setTimeout(()=>{
+      alert("Wanneer de klok negen slaat en avond in het duister baadt,\nverschijnt de haan met vurig kam, die waakt waar voor hem stilte kwam.\nWie hem ontmoet op 't uur der nacht, zal dragen last tot morgengracht.");
+    },200);
     return;
   }
   sequence.push(buttons[Math.floor(Math.random()*4)]);
@@ -261,17 +279,16 @@ function playSequence(){
 }
 function highlight(color){
   const el=document.getElementById(color);
-  if(!el) return;
+  if(!el)return;
   el.classList.add("active");
-  setTimeout(()=> el.classList.remove("active"),225);
+  setTimeout(()=>el.classList.remove("active"),225);
 }
 document.querySelectorAll(".btn").forEach(btn=>{
-  btn.addEventListener("click", e=>{
-    if(!gameActive) return;
+  btn.addEventListener("click",e=>{
+    if(!gameActive)return;
     const color=e.currentTarget.id;
     playerSequence.push(color);
-    highlight(color);
-    playSound(color);
+    highlight(color); playSound(color);
     checkInput();
   });
 });
@@ -292,12 +309,11 @@ function updateProgress(){
   const progress=Math.min(level/goalLevel*100,100);
   document.getElementById("progress-bar").style.width=progress+"%";
 }
-
-document.addEventListener("click", function resumeOnce(){
+document.addEventListener("click",function resumeOnce(){
   if(audioCtx.state==="suspended") audioCtx.resume();
-  document.removeEventListener("click", resumeOnce);
+  document.removeEventListener("click",resumeOnce);
 });
-document.getElementById("password-input").addEventListener("keydown", (e)=>{
+document.getElementById("password-input").addEventListener("keydown",e=>{
   if(e.key==="Enter") checkPassword();
 });
 </script>
