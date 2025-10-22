@@ -2,213 +2,126 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<title>Simon Says Mysterie</title>
+<title>De Haan van de Nacht – Simon Says</title>
 <style>
-  body {
-    font-family: 'Trebuchet MS', sans-serif;
-    background: radial-gradient(circle at center, #0b0b0b 0%, #000 100%);
-    color: #eee;
-    text-align: center;
-    margin: 0;
-    overflow-x: hidden;
-    transition: transform 0.1s;
-  }
+/* ---------- Algemene stijl ---------- */
+body {
+  font-family: 'Trebuchet MS', sans-serif;
+  background: radial-gradient(circle at center, #0b0b0b 0%, #000 100%);
+  color: #eee;
+  text-align: center;
+  margin: 0;
+  overflow-x: hidden;
+  transition: transform 0.1s;
+  position: relative;
+}
+.shake-screen { animation: screenShake 0.6s ease; }
+@keyframes screenShake {
+  0%,100%{transform:translate(0,0);}
+  20%{transform:translate(-10px,5px);}
+  40%{transform:translate(8px,-8px);}
+  60%{transform:translate(-5px,5px);}
+  80%{transform:translate(5px,-3px);}
+}
 
-  /* ----------------- Schermtrilling ----------------- */
-  .shake-screen {
-    animation: screenShake 0.6s ease;
-  }
-  @keyframes screenShake {
-    0% { transform: translate(0,0); }
-    20% { transform: translate(-10px,5px); }
-    40% { transform: translate(8px,-8px); }
-    60% { transform: translate(-5px,5px); }
-    80% { transform: translate(5px,-3px); }
-    100% { transform: translate(0,0); }
-  }
+/* ---------- Wachtwoord ---------- */
+#password-screen {
+  position: fixed; inset: 0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  background: radial-gradient(circle at 50% 40%, #1a1a1a, #000);
+  box-shadow: inset 0 0 100px #000;
+  z-index: 10; transition: opacity 1.5s, transform 1.5s, filter 1.5s;
+}
+#password-screen.fade-out { opacity:0; transform:scale(1.2); filter:blur(3px);}
+#password-screen h1{font-size:2em;color:#74b9ff;text-shadow:0 0 10px #0984e3;}
+#password-screen input{padding:10px;font-size:16px;border-radius:8px;border:none;
+  outline:none;margin:10px 0;width:200px;text-align:center;background:#222;color:#eee;
+  box-shadow:0 0 10px rgba(116,185,255,0.3);}
+#password-screen button{padding:10px 20px;font-size:16px;background:#0984e3;border:none;
+  border-radius:8px;color:white;cursor:pointer;transition:background 0.3s,transform 0.2s;}
+#password-screen button:hover{background:#74b9ff;transform:scale(1.05);}
+#password-error{color:#ff7675;margin-top:10px;display:none;font-size:1.1em;
+  text-shadow:0 0 4px #ff0000;}
 
-  /* ----------------- Wachtwoord ----------------- */
-  #password-screen {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: radial-gradient(circle at 50% 40%, #1a1a1a, #000);
-    box-shadow: inset 0 0 100px #000;
-    z-index: 10;
-    transition: opacity 1.5s ease, transform 1.5s ease, filter 1.5s ease;
-  }
-  #password-screen.fade-out {
-    opacity: 0;
-    transform: scale(1.2);
-    filter: blur(3px);
-  }
-  #password-screen h1 {
-    font-size: 2em;
-    color: #74b9ff;
-    text-shadow: 0 0 10px #0984e3;
-  }
-  #password-screen input {
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: none;
-    outline: none;
-    margin: 10px 0;
-    width: 200px;
-    text-align: center;
-    background: #222;
-    color: #eee;
-    box-shadow: 0 0 10px rgba(116,185,255,0.3);
-  }
-  #password-screen button {
-    padding: 10px 20px;
-    font-size: 16px;
-    background: #0984e3;
-    border: none;
-    border-radius: 8px;
-    color: white;
-    cursor: pointer;
-    transition: background 0.3s, transform 0.2s;
-  }
-  #password-screen button:hover {
-    background: #74b9ff;
-    transform: scale(1.05);
-  }
-  #password-error {
-    color: #ff7675;
-    margin-top: 10px;
-    display: none;
-    font-size: 1.1em;
-    text-shadow: 0 0 4px #ff0000;
-  }
+/* ---------- Flash / portal / energie ---------- */
+#red-flash{position:fixed;inset:0;background:rgba(255,0,0,0.2);opacity:0;
+  pointer-events:none;z-index:9999;}
+#red-flash.active{animation:redFlash .4s;}
+@keyframes redFlash{0%{opacity:.7;filter:blur(2px);}50%{opacity:.8;}100%{opacity:0;}}
+#portal{position:fixed;top:50%;left:50%;width:100px;height:100px;
+  border:4px solid rgba(116,185,255,0.6);border-radius:50%;
+  transform:translate(-50%,-50%) scale(0);box-shadow:0 0 20px 10px rgba(116,185,255,.6);
+  z-index:50;pointer-events:none;opacity:0;}
+#portal.active{animation:openPortal 2s forwards;}
+@keyframes openPortal{
+  0%{transform:translate(-50%,-50%) scale(0);opacity:0;}
+  30%{transform:translate(-50%,-50%) scale(1.2);opacity:1;}
+  60%{transform:translate(-50%,-50%) scale(1.8) rotate(180deg);opacity:.9;}
+  100%{transform:translate(-50%,-50%) scale(3) rotate(360deg);opacity:0;}
+}
+#energy-wave{position:fixed;inset:0;
+  background:radial-gradient(circle,rgba(0,200,255,.25),transparent 70%);
+  opacity:0;pointer-events:none;z-index:40;}
+#energy-wave.active{animation:energySweep 1.5s ease-out forwards;}
+@keyframes energySweep{
+  0%{transform:scale(.5);opacity:0;}
+  30%{transform:scale(1.2);opacity:.6;}
+  60%{transform:scale(2);opacity:.4;}
+  100%{transform:scale(3.5);opacity:0;}
+}
 
-  /* ----------------- RODE FLITS ----------------- */
-  #red-flash {
-    position: fixed;
-    inset: 0;
-    background: rgba(255,0,0,0.2);
-    opacity: 0;
-    pointer-events: none;
-    z-index: 9999;
-  }
-  #red-flash.active {
-    animation: redFlash 0.4s;
-  }
-  @keyframes redFlash {
-    0% { opacity: 0.7; filter: blur(2px); }
-    50% { opacity: 0.8; filter: blur(1px); }
-    100% { opacity: 0; filter: blur(0); }
-  }
+/* ---------- Spel ---------- */
+#game-container{display:none;padding-top:20px;}
+#game{display:grid;grid-template-columns:repeat(2,150px);
+  grid-template-rows:repeat(2,150px);gap:15px;justify-content:center;margin:30px auto;}
+.btn{width:150px;height:150px;opacity:.8;border-radius:15px;
+  transition:transform .2s,opacity .2s,box-shadow .2s;cursor:pointer;}
+#green{background:#00b894;}#red{background:#d63031;}
+#yellow{background:#fdcb6e;}#blue{background:#0984e3;}
+.btn.active{opacity:1!important;transform:scale(1.1);
+  box-shadow:0 0 25px rgba(255,255,255,.9);}
+#progress{width:80%;height:20px;background:#333;border-radius:10px;
+  margin:15px auto;overflow:hidden;}
+#progress-bar{height:100%;width:0;
+  background:linear-gradient(90deg,#00b894,#0984e3);transition:width .3s;}
 
-  /* ----------------- PORTAAL ----------------- */
-  #portal {
-    position: fixed;
-    top:50%;
-    left:50%;
-    width:100px;
-    height:100px;
-    border:4px solid rgba(116,185,255,0.6);
-    border-radius:50%;
-    transform:translate(-50%,-50%) scale(0);
-    box-shadow:0 0 20px 10px rgba(116,185,255,0.6);
-    z-index:50;
-    pointer-events:none;
-    opacity:0;
-  }
-  #portal.active {
-    animation: openPortal 2s forwards;
-  }
-  @keyframes openPortal {
-    0% { transform: translate(-50%,-50%) scale(0); opacity:0; }
-    30% { transform: translate(-50%,-50%) scale(1.2); opacity:1; }
-    60% { transform: translate(-50%,-50%) scale(1.8) rotate(180deg); opacity:0.9; }
-    100% { transform: translate(-50%,-50%) scale(3) rotate(360deg); opacity:0; }
-  }
+/* ---------- Sprankeltekst + haan ---------- */
+#status.sparkle{animation:sparkleText 2s infinite alternate;color:#fff;
+  text-shadow:0 0 5px #00eaff,0 0 10px #00eaff,0 0 20px #00eaff,0 0 40px #00ffff;
+  position:relative;}
+#status.sparkle::after{
+  content:"";position:absolute;left:50%;top:50%;width:400px;height:400px;
+  background:url('https://upload.wikimedia.org/wikipedia/commons/2/2e/Rooster_silhouette.svg') no-repeat center/contain;
+  transform:translate(-50%,-50%) scale(.8);
+  opacity:.15;filter:drop-shadow(0 0 10px red);
+  animation:hauntHaan 12s infinite alternate ease-in-out;
+}
+@keyframes sparkleText{from{opacity:.7;filter:hue-rotate(0);}to{opacity:1;filter:hue-rotate(360deg);}}
+@keyframes hauntHaan{
+  0%{transform:translate(-50%,-45%) scale(.7) rotate(0);opacity:.1;}
+  100%{transform:translate(-50%,-55%) scale(1) rotate(10deg);opacity:.25;}
+}
 
-  /* ----------------- Energie-wave ----------------- */
-  #energy-wave {
-    position: fixed;
-    inset:0;
-    background: radial-gradient(circle at 50% 50%, rgba(0,200,255,0.25), transparent 70%);
-    opacity:0;
-    pointer-events:none;
-    z-index:40;
-  }
-  #energy-wave.active {
-    animation: energySweep 1.5s ease-out forwards;
-  }
-  @keyframes energySweep {
-    0% { transform: scale(0.5); opacity:0; }
-    30% { transform: scale(1.2); opacity:0.6; }
-    60% { transform: scale(2); opacity:0.4; }
-    100% { transform: scale(3.5); opacity:0; }
-  }
-
-  /* ----------------- SPEL ----------------- */
-  #game-container { display:none; padding-top:20px; }
-  #game {
-    display:grid;
-    grid-template-columns:repeat(2,150px);
-    grid-template-rows:repeat(2,150px);
-    gap:15px;
-    justify-content:center;
-    margin:30px auto;
-  }
-  .btn {
-    width:150px;
-    height:150px;
-    opacity:0.8;
-    border-radius:15px;
-    transition:transform 0.2s, opacity 0.2s, box-shadow 0.2s;
-    cursor:pointer;
-  }
-  #green { background:#00b894; }
-  #red { background:#d63031; }
-  #yellow { background:#fdcb6e; }
-  #blue { background:#0984e3; }
-  .btn.active {
-    opacity:1 !important;
-    transform:scale(1.1);
-    box-shadow:0 0 25px rgba(255,255,255,0.9);
-  }
-  #progress {
-    width:80%;
-    height:20px;
-    background:#333;
-    border-radius:10px;
-    margin:15px auto;
-    overflow:hidden;
-  }
-  #progress-bar {
-    height:100%;
-    width:0;
-    background:linear-gradient(90deg, #00b894, #0984e3);
-    transition: width 0.3s;
-  }
-
-  /* ----------------- SPRANKELENDE TEKST ----------------- */
-  #status.sparkle {
-    animation: sparkleText 2s infinite alternate;
-    color:#fff;
-    text-shadow:
-      0 0 5px #00eaff,
-      0 0 10px #00eaff,
-      0 0 20px #00eaff,
-      0 0 40px #00ffff;
-  }
-  @keyframes sparkleText {
-    from { opacity:0.7; filter:hue-rotate(0deg); }
-    to { opacity:1; filter:hue-rotate(360deg); }
-  }
+/* ---------- Haan verschijning ---------- */
+#haanshadow{
+  position:fixed;bottom:-300px;left:50%;transform:translateX(-50%);
+  width:300px;height:300px;
+  background:url('https://upload.wikimedia.org/wikipedia/commons/2/2e/Rooster_silhouette.svg') no-repeat center/contain;
+  opacity:0;pointer-events:none;z-index:45;
+}
+#haanshadow.active{animation:haanRise 5s ease-in-out forwards;}
+@keyframes haanRise{
+  0%{opacity:0;transform:translate(-50%,100%) scale(.8) blur(5px);}
+  50%{opacity:.7;transform:translate(-50%,0) scale(1.1);}
+  100%{opacity:0;transform:translate(-50%,-20%) scale(1.2);}
+}
 </style>
 </head>
 <body>
 <div id="red-flash"></div>
 <div id="portal"></div>
 <div id="energy-wave"></div>
+<div id="haanshadow"></div>
 
 <!-- Wachtwoord -->
 <div id="password-screen">
@@ -236,30 +149,25 @@
 <script>
 const correctPassword="noordkromp";
 const audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-
 const buttons=["green","red","yellow","blue"];
-let sequence=[], playerSequence=[], level=0, gameActive=false;
+let sequence=[],playerSequence=[],level=0,gameActive=false;
 const goalLevel=18;
-const sounds={green:440, red:523.25, yellow:659.26, blue:830.61};
-const waveforms={green:"sine", red:"square", yellow:"triangle", blue:"sawtooth"};
+const sounds={green:440,red:523.25,yellow:659.26,blue:830.61};
+const waveforms={green:"sine",red:"square",yellow:"triangle",blue:"sawtooth"};
 
+/* --------- wachtwoord --------- */
 function checkPassword(){
   const input=document.getElementById("password-input");
   const error=document.getElementById("password-error");
   const flash=document.getElementById("red-flash");
   const portal=document.getElementById("portal");
   const wave=document.getElementById("energy-wave");
-
   if(input.value.trim().toLowerCase()===correctPassword){
-    playPortalSound();
-    navigator.vibrate([200,100,200,100,200]);
+    playPortalSound();navigator.vibrate([200,100,200,100,200]);
     document.body.classList.add("shake-screen");
-    wave.classList.add("active");
-    portal.classList.add("active");
-
+    wave.classList.add("active");portal.classList.add("active");
     const screen=document.getElementById("password-screen");
     screen.classList.add("fade-out");
-
     setTimeout(()=>{
       document.body.classList.remove("shake-screen");
       wave.classList.remove("active");
@@ -269,156 +177,113 @@ function checkPassword(){
       document.getElementById("game-container").scrollIntoView({behavior:"smooth"});
     },1800);
   } else {
-    playCreepyError();
-    navigator.vibrate([120]);
-    flash.classList.add("active");
-    error.style.display="block";
+    playCreepyError();navigator.vibrate([120]);
+    flash.classList.add("active");error.style.display="block";
     setTimeout(()=>flash.classList.remove("active"),600);
   }
 }
 
-/* ----------------- Geluiden ----------------- */
+/* --------- geluiden --------- */
 function playPortalSound(){
-  const now=audioCtx.currentTime;
-  const osc=audioCtx.createOscillator();
-  const gain=audioCtx.createGain();
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  osc.type="sine";
-  osc.frequency.setValueAtTime(100,now);
-  osc.frequency.exponentialRampToValueAtTime(900,now+1.5);
-  gain.gain.setValueAtTime(0.3,now);
-  gain.gain.exponentialRampToValueAtTime(0.001,now+1.8);
-  osc.start(now);
-  osc.stop(now+1.8);
+  const n=audioCtx.currentTime;
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.type="sine";o.frequency.setValueAtTime(100,n);
+  o.frequency.exponentialRampToValueAtTime(900,n+1.5);
+  g.gain.setValueAtTime(0.3,n);g.gain.exponentialRampToValueAtTime(0.001,n+1.8);
+  o.connect(g).connect(audioCtx.destination);o.start(n);o.stop(n+1.8);
 }
-
 function playCreepyError(){
-  if(audioCtx.state==="suspended") audioCtx.resume();
-  const now=audioCtx.currentTime;
-  for(let i=0;i<6;i++){
-    const osc=audioCtx.createOscillator();
-    const gain=audioCtx.createGain();
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.type="sawtooth";
-    osc.frequency.setValueAtTime(100+Math.random()*200, now+i*0.05);
-    gain.gain.setValueAtTime(0.2, now+i*0.05);
-    gain.gain.exponentialRampToValueAtTime(0.001, now+i*0.05+0.2);
-    osc.start(now+i*0.05);
-    osc.stop(now+i*0.05+0.2);
-  }
+  const n=audioCtx.currentTime;
+  for(let i=0;i<6;i++){const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.connect(g);g.connect(audioCtx.destination);
+    o.type="sawtooth";o.frequency.setValueAtTime(100+Math.random()*200,n+i*0.05);
+    g.gain.setValueAtTime(0.2,n+i*0.05);
+    g.gain.exponentialRampToValueAtTime(0.001,n+i*0.05+0.2);
+    o.start(n+i*0.05);o.stop(n+i*0.05+0.2);}
 }
-
 function playGameError(){
-  if(audioCtx.state==="suspended") audioCtx.resume();
-  const now=audioCtx.currentTime;
-  const o=audioCtx.createOscillator();
-  const g=audioCtx.createGain();
-  o.connect(g); g.connect(audioCtx.destination);
-  o.type="sawtooth";
-  o.frequency.setValueAtTime(120,now);
-  o.frequency.exponentialRampToValueAtTime(60,now+0.3);
-  g.gain.setValueAtTime(0.3,now);
-  g.gain.exponentialRampToValueAtTime(0.001,now+0.3);
-  o.start(now); o.stop(now+0.3);
+  const n=audioCtx.currentTime;
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.type="sawtooth";o.frequency.setValueAtTime(120,n);
+  o.frequency.exponentialRampToValueAtTime(60,n+.3);
+  g.gain.setValueAtTime(0.3,n);g.gain.exponentialRampToValueAtTime(0.001,n+.3);
+  o.connect(g).connect(audioCtx.destination);o.start(n);o.stop(n+.3);
 }
-
 function playVictorySound(){
-  const now=audioCtx.currentTime;
-  const freqs=[440,523.25,659.25];
+  const n=audioCtx.currentTime;const freqs=[440,523.25,659.25];
   freqs.forEach((f,i)=>{
-    const o=audioCtx.createOscillator();
-    const g=audioCtx.createGain();
-    o.type="triangle"; o.frequency.setValueAtTime(f,now+i*0.1);
-    g.gain.setValueAtTime(0.2,now+i*0.1);
-    g.gain.exponentialRampToValueAtTime(0.001, now+i*0.6);
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.type="triangle";o.frequency.setValueAtTime(f,n+i*0.1);
+    g.gain.setValueAtTime(0.2,n+i*0.1);
+    g.gain.exponentialRampToValueAtTime(0.001,n+i*0.6);
     o.connect(g).connect(audioCtx.destination);
-    o.start(now+i*0.1); o.stop(now+i*0.6);
+    o.start(n+i*0.1);o.stop(n+i*0.6);
   });
 }
-
-/* ----------------- Simon Says ----------------- */
-function playSound(color){
-  if(audioCtx.state==="suspended") audioCtx.resume();
-  const osc=audioCtx.createOscillator();
-  const gain=audioCtx.createGain();
-  osc.connect(gain); gain.connect(audioCtx.destination);
-  osc.type=waveforms[color]; osc.frequency.value=sounds[color];
-  osc.start();
-  gain.gain.setValueAtTime(0.2,audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.6);
-  osc.stop(audioCtx.currentTime+0.6);
+function playHaanRoep(){
+  const n=audioCtx.currentTime;
+  const o1=audioCtx.createOscillator(),o2=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o1.type="sawtooth";o2.type="triangle";
+  o1.frequency.setValueAtTime(100,n);o2.frequency.setValueAtTime(300,n);
+  o1.frequency.exponentialRampToValueAtTime(50,n+1.5);
+  o2.frequency.exponentialRampToValueAtTime(600,n+1.5);
+  g.gain.setValueAtTime(0.3,n);g.gain.exponentialRampToValueAtTime(0.001,n+1.5);
+  o1.connect(g);o2.connect(g);g.connect(audioCtx.destination);
+  o1.start(n);o2.start(n);o1.stop(n+1.5);o2.stop(n+1.5);
 }
 
-function startGame(){
-  sequence=[]; playerSequence=[]; level=0; gameActive=true;
-  updateProgress(); nextRound();
+/* --------- Simon Says --------- */
+function playSound(c){
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.type=waveforms[c];o.frequency.value=sounds[c];
+  o.connect(g).connect(audioCtx.destination);
+  o.start();g.gain.setValueAtTime(0.2,audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+.6);
+  o.stop(audioCtx.currentTime+.6);
 }
-
+function startGame(){sequence=[];playerSequence=[];level=0;gameActive=true;updateProgress();nextRound();}
 function nextRound(){
-  if(!gameActive) return;
-  playerSequence=[]; level++;
-  document.getElementById("status").textContent="Level "+level;
-  updateProgress();
-
+  if(!gameActive)return;playerSequence=[];level++;
+  document.getElementById("status").textContent="Level "+level;updateProgress();
+  if(level===9){const h=document.getElementById("haanshadow");
+    h.classList.add("active");playHaanRoep();navigator.vibrate([200,100,200,400]);
+    setTimeout(()=>h.classList.remove("active"),6000);}
   if(level>goalLevel){
-    gameActive=false;
-    playVictorySound();
-    navigator.vibrate([100,100,100,300]);
+    gameActive=false;playVictorySound();navigator.vibrate([100,100,100,300]);
     const st=document.getElementById("status");
-    st.textContent="Je hebt het raadsel onthuld!";
-    st.classList.add("sparkle");
+    st.textContent="Je hebt het raadsel onthuld!";st.classList.add("sparkle");
     alert("Wanneer de klok negen slaat en avond in het duister baadt,\nverschijnt de haan met vurig kam, die waakt waar voor hem stilte kwam.\nWie hem ontmoet op 't uur der nacht, zal dragen last tot morgengracht.");
     return;
   }
-
-  const nextColor=buttons[Math.floor(Math.random()*4)];
-  sequence.push(nextColor);
-  playSequence();
+  sequence.push(buttons[Math.floor(Math.random()*4)]);playSequence();
 }
-
 function playSequence(){
-  let i=0;
-  const interval=setInterval(()=>{
-    highlight(sequence[i]); playSound(sequence[i]); i++;
-    if(i>=sequence.length) clearInterval(interval);
-  }, 500);
+  let i=0;const interval=setInterval(()=>{
+    highlight(sequence[i]);playSound(sequence[i]);i++;
+    if(i>=sequence.length)clearInterval(interval);
+  },500);
 }
-
-function highlight(color){
-  const el=document.getElementById(color);
-  el.classList.add("active");
+function highlight(c){
+  const el=document.getElementById(c);el.classList.add("active");
   setTimeout(()=>el.classList.remove("active"),500);
 }
-
 document.querySelectorAll(".btn").forEach(btn=>{
   btn.addEventListener("click",e=>{
-    if(!gameActive) return;
-    const color=e.target.id;
-    playerSequence.push(color);
-    highlight(color);
-    playSound(color);
-    checkInput();
+    if(!gameActive)return;const c=e.target.id;
+    playerSequence.push(c);highlight(c);playSound(c);checkInput();
   });
 });
-
 function checkInput(){
-  const idx=playerSequence.length-1;
-  if(playerSequence[idx]!==sequence[idx]){
+  const i=playerSequence.length-1;
+  if(playerSequence[i]!==sequence[i]){
     document.getElementById("status").textContent="❌ Fout! Probeer opnieuw.";
-    playGameError();
-    navigator.vibrate([120,80,120]);
-    gameActive=false;
-    return;
+    playGameError();navigator.vibrate([120,80,120]);gameActive=false;return;
   }
-  if(playerSequence.length===sequence.length){
-    setTimeout(nextRound,800);
-  }
+  if(playerSequence.length===sequence.length)setTimeout(nextRound,800);
 }
-
 function updateProgress(){
-  const progress=Math.min(level/goalLevel*100,100);
-  document.getElementById("progress-bar").style.width=progress+"%";
+  document.getElementById("progress-bar").style.width=
+    Math.min(level/goalLevel*100,100)+"%";
 }
 </script>
 </body>
