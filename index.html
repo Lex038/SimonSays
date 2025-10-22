@@ -153,32 +153,68 @@ const sounds={green:440,red:523.25,yellow:659.26,blue:830.61};
 const waveforms={green:"sine",red:"square",yellow:"triangle",blue:"sawtooth"};
 let inGame=false;
 
-/* Oog animatie */
+/* Oog animatie — trage, rand-beweging */
 let eyeInterval;
-function startEyeAnimation(){
-  const eye=document.getElementById("red-eye");
-  if(!eye)return;
-  eye.style.opacity=0;
-  function blinkAndMove(){
-    const maxX=window.innerWidth-50;
-    const maxY=window.innerHeight-50;
-    const x=Math.floor(Math.random()*maxX);
-    const y=Math.floor(Math.random()*maxY);
-    eye.style.left=x+"px";
-    eye.style.top=y+"px";
-    eye.style.opacity=1;
-    setTimeout(()=>{eye.style.opacity=0;},350);
-    const nextTime=inGame?5000+Math.random()*7000:1000+Math.random()*800;
+function startEyeAnimation() {
+  const eye = document.getElementById("red-eye");
+  if (!eye) return;
+  eye.style.opacity = 0;
+
+  function blinkAndMove() {
+    const margin = 50; // afstand van rand
+    const edge = Math.floor(Math.random() * 4); // 0=links,1=boven,2=rechts,3=onder
+    let x = 0, y = 0;
+
+    switch (edge) {
+      case 0: // links
+        x = Math.random() * margin;
+        y = Math.random() * window.innerHeight;
+        break;
+      case 1: // boven
+        x = Math.random() * window.innerWidth;
+        y = Math.random() * margin;
+        break;
+      case 2: // rechts
+        x = window.innerWidth - margin - 50;
+        y = Math.random() * window.innerHeight;
+        break;
+      case 3: // onder
+        x = Math.random() * window.innerWidth;
+        y = window.innerHeight - margin - 50;
+        break;
+    }
+
+    // verplaatsing direct, zonder glijden
+    eye.style.left = x + "px";
+    eye.style.top = y + "px";
+
+    // langzaam knipperen
+    eye.style.transition = "opacity 2.5s ease";
+    eye.style.opacity = 1;
+
+    setTimeout(() => {
+      eye.style.opacity = 0;
+    }, 2500);
+
+    // veel minder vaak knipperen
+    const nextTime = inGame
+      ? 15000 + Math.random() * 10000 // tijdens spel: 15–25s
+      : 6000 + Math.random() * 4000;  // in wachtwoordscherm: 6–10s
+
     clearInterval(eyeInterval);
-    eyeInterval=setInterval(blinkAndMove,nextTime);
+    eyeInterval = setInterval(blinkAndMove, nextTime);
   }
+
   blinkAndMove();
 }
-function stopEyeAnimation(){
+
+function stopEyeAnimation() {
   clearInterval(eyeInterval);
-  const eye=document.getElementById("red-eye");
-  if(eye) eye.style.opacity=0;
+  const eye = document.getElementById("red-eye");
+  if (eye) eye.style.opacity = 0;
 }
+
+startEyeAnimation();
 startEyeAnimation();
 
 /* Wachtwoordcontrole */
