@@ -146,28 +146,43 @@ let inGame=false;
 
 /* Oog animatie */
 let eyeInterval;
-function startEyeAnimation(){
-  const eye=document.getElementById("red-eye");
-  function blinkAndMove(){
-    const maxX=window.innerWidth-44;
-    const maxY=window.innerHeight-44;
-    const x=Math.floor(Math.random()*maxX);
-    const y=Math.floor(Math.random()*maxY);
-    eye.style.transform=`translate(${x}px,${y}px)`;
-    eye.style.opacity=0.9;
-    setTimeout(()=>{eye.style.opacity=0;},350);
-    const nextTime=inGame?4000+Math.random()*6000:1200+Math.random()*800;
+function startEyeAnimation() {
+  const eye = document.getElementById("red-eye");
+
+  // Geen positie-animatie, alleen flits op willekeurige plekken
+  function blinkAndMove() {
+    const maxX = window.innerWidth - 44;
+    const maxY = window.innerHeight - 44;
+    const x = Math.floor(Math.random() * maxX);
+    const y = Math.floor(Math.random() * maxY);
+
+    // Zet direct de nieuwe positie zonder transitie
+    eye.style.transition = "opacity 0.45s";
+    eye.style.left = x + "px";
+    eye.style.top = y + "px";
+
+    // Flits
+    eye.style.opacity = 0.9;
+    setTimeout(() => {
+      eye.style.opacity = 0;
+    }, 350);
+
+    // Herhaal afhankelijk van fase
+    const nextTime = inGame
+      ? 5000 + Math.random() * 7000  // trager tijdens spel
+      : 1000 + Math.random() * 800;  // sneller bij wachtwoord
     clearInterval(eyeInterval);
-    eyeInterval=setInterval(blinkAndMove,nextTime);
+    eyeInterval = setInterval(blinkAndMove, nextTime);
   }
+
   blinkAndMove();
 }
-function stopEyeAnimation(){
+
+function stopEyeAnimation() {
   clearInterval(eyeInterval);
-  const eye=document.getElementById("red-eye");
-  if(eye) eye.style.opacity=0;
+  const eye = document.getElementById("red-eye");
+  if (eye) eye.style.opacity = 0;
 }
-startEyeAnimation();
 
 /* Wachtwoordcontrole */
 function checkPassword(){
