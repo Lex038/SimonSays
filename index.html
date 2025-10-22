@@ -34,19 +34,17 @@ body{
 }
 #red-eye{
   position: fixed;
-  width: 30px;              
+  width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: rgba(255,50,50,0.85); /* feller rood */
-  box-shadow: 0 0 12px rgba(255,50,50,0.6); /* subtiel glow */
-  filter: blur(0px);        /* scherp */
+  background: rgba(255,50,50,0.85); /* fel rood */
+  box-shadow: 0 0 12px rgba(255,50,50,0.6);
+  filter: blur(0px);
   opacity: 0;
   z-index: 9999;
   pointer-events: none;
+  /* alleen opacity transition */
   transition: opacity 3s ease;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%,-50%);
 }
 #password-screen{
   position:fixed; inset:0; display:flex; flex-direction:column;
@@ -198,6 +196,7 @@ function stopEyeAnimation(){
 }
 
 startEyeAnimation();
+  
 /* Wachtwoordcontrole */
 function checkPassword(){
   const input=document.getElementById("password-input");
