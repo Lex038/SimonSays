@@ -37,10 +37,13 @@
       animation: portalFade 1.5s forwards;
     }
 
+    /* ✨ Toegevoegde gloed tijdens poort-effect */
     @keyframes portalFade {
-      0% { opacity: 1; filter: brightness(1); }
-      50% { opacity: 1; filter: brightness(3); }
-      100% { opacity: 0; filter: brightness(0); }
+      0% { opacity: 1; box-shadow: 0 0 0 0 rgba(116,185,255,0); filter: brightness(1); }
+      25% { opacity: 1; box-shadow: 0 0 40px 20px rgba(116,185,255,0.3); filter: brightness(2); }
+      50% { opacity: 1; box-shadow: 0 0 80px 40px rgba(116,185,255,0.5); filter: brightness(3); }
+      75% { opacity: 0.8; box-shadow: 0 0 100px 60px rgba(9,132,227,0.4); filter: brightness(2); }
+      100% { opacity: 0; box-shadow: 0 0 0 0 rgba(116,185,255,0); filter: brightness(0); }
     }
 
     #password-screen h1 {
@@ -54,15 +57,8 @@
       animation: typing 3s steps(25, end), blink-caret .7s step-end infinite;
     }
 
-    @keyframes typing {
-      from { width: 0 }
-      to { width: 100% }
-    }
-
-    @keyframes blink-caret {
-      from, to { border-color: transparent }
-      50% { border-color: #74b9ff; }
-    }
+    @keyframes typing { from { width: 0 } to { width: 100% } }
+    @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: #74b9ff; } }
 
     #password-screen input {
       padding: 10px;
@@ -151,9 +147,7 @@
       box-shadow: 0 0 25px rgba(255, 255, 255, 0.9);
     }
 
-    #controls {
-      margin: 20px 0;
-    }
+    #controls { margin: 20px 0; }
 
     #progress {
       width: 80%;
@@ -201,10 +195,7 @@
       <button onclick="startGame()">▶️ Start</button>
     </div>
 
-    <div id="progress">
-      <div id="progress-bar"></div>
-    </div>
-
+    <div id="progress"><div id="progress-bar"></div></div>
     <div id="status">Druk op Start om te beginnen</div>
   </div>
 
@@ -231,9 +222,9 @@
       }
     }
 
-    // 🎶 Korte mysterieuze melodie bij toegang
+    // 🎵 Mysterieuze melodie bij toegang
     function playUnlockMelody() {
-      const notes = [440, 523.25, 659.26, 523.25, 392]; // A - C - E - C - G
+      const notes = [440, 523.25, 659.26, 523.25, 392];
       const now = audioCtx.currentTime;
       notes.forEach((freq, i) => {
         const osc = audioCtx.createOscillator();
