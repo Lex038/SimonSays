@@ -154,7 +154,7 @@ const sounds={green:440,red:523.25,yellow:659.26,blue:830.61};
 const waveforms={green:"sine",red:"square",yellow:"triangle",blue:"sawtooth"};
 let inGame=false;
 
-/* Oog animatie met subtiele jitter */
+/* Oog animatie stil, alleen knipperen langs rand */
 let eyeInterval;
 function startEyeAnimation() {
   const eye = document.getElementById("red-eye");
@@ -173,29 +173,16 @@ function startEyeAnimation() {
       case 3: x = Math.random()*window.innerWidth; y = window.innerHeight - margin - 30; break; // onder
     }
 
-    eye.style.left = x+"px";
-    eye.style.top = y+"px";
+    eye.style.left = x + "px";
+    eye.style.top = y + "px";
     eye.style.opacity = 1;
     eye.style.transition = "opacity 3s ease";
 
-    // subtiele jitter
-    let jitterCount = 0;
-    const jitterInterval = setInterval(()=>{
-      const dx = (Math.random()-0.5)*6; // max ±3px
-      const dy = (Math.random()-0.5)*6;
-      eye.style.transform = `translate(-50%, -50%) translate(${dx}px, ${dy}px)`;
-      jitterCount++;
-      if(jitterCount>8){ 
-        clearInterval(jitterInterval); 
-        eye.style.transform="translate(-50%,-50%)"; 
-      }
-    }, 300);
-
-    setTimeout(()=>{ 
-      eye.style.opacity=0; 
-      eye.style.transform="translate(-50%,-50%)";
+    setTimeout(() => {
+      eye.style.opacity = 0;
     }, 3000);
 
+    // minder vaak knipperen
     const nextTime = inGame ? 25000 + Math.random()*15000 : 12000 + Math.random()*8000;
     clearInterval(eyeInterval);
     eyeInterval = setInterval(blinkAndMove, nextTime);
@@ -207,11 +194,10 @@ function startEyeAnimation() {
 function stopEyeAnimation(){
   clearInterval(eyeInterval);
   const eye = document.getElementById("red-eye");
-  if(eye) eye.style.opacity=0;
+  if(eye) eye.style.opacity = 0;
 }
 
 startEyeAnimation();
-
 /* Wachtwoordcontrole */
 function checkPassword(){
   const input=document.getElementById("password-input");
