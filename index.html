@@ -18,19 +18,11 @@ body{
   opacity:0.06; filter:drop-shadow(0 0 6px rgba(255,0,0,0.15));
   z-index:1; pointer-events:none;
   transition:opacity 1s, transform 1s, filter 1s;
-  transform:scale(1);
   animation: haanFloat 6s ease-in-out infinite;
 }
-#haan-bg.come-forward{
-  opacity:0.42; transform:scale(1.05) translateY(-8%);
-  filter:drop-shadow(0 0 40px rgba(255,10,10,0.35));
-}
 @keyframes haanFloat{
-  0%{transform:translateY(0) rotate(0deg);opacity:0.06}
-  25%{transform:translateY(-2%) rotate(1deg);opacity:0.08}
-  50%{transform:translateY(0) rotate(0deg);opacity:0.06}
-  75%{transform:translateY(2%) rotate(-1deg);opacity:0.08}
-  100%{transform:translateY(0) rotate(0deg);opacity:0.06}
+  0%,100%{transform:translateY(0);opacity:0.06}
+  50%{transform:translateY(-2%);opacity:0.08}
 }
 #red-eye{
   position: fixed;
@@ -150,7 +142,7 @@ const sounds={green:440,red:523.25,yellow:659.26,blue:830.61};
 const waveforms={green:"sine",red:"square",yellow:"triangle",blue:"sawtooth"};
 let inGame=false;
 
-/* Oog animatie stilstaand */
+/* Oog animatie stilstaand en zeldzaam */
 let eyeInterval;
 function startEyeAnimation() {
   const eye = document.getElementById("red-eye");
@@ -172,9 +164,9 @@ function startEyeAnimation() {
     eye.style.left = x + "px";
     eye.style.top = y + "px";
     eye.style.opacity = 1;
-    setTimeout(()=>{ eye.style.opacity = 0; }, 3000);
+    setTimeout(()=>{ eye.style.opacity = 0; }, 4000);
 
-    const nextTime = inGame ? 30000 + Math.random()*15000 : 15000 + Math.random()*5000;
+    const nextTime = inGame ? 45000 + Math.random()*15000 : 25000 + Math.random()*10000;
     clearInterval(eyeInterval);
     eyeInterval = setInterval(blinkAndMove, nextTime);
   }
@@ -188,7 +180,7 @@ function stopEyeAnimation(){
 }
 startEyeAnimation();
 
-/* Wachtwoord check */
+/* Wachtwoord */
 function checkPassword(){
   const val=document.getElementById("password-input").value.trim();
   if(val===correctPassword){
@@ -198,7 +190,6 @@ function checkPassword(){
     startEyeAnimation();
   } else {
     document.getElementById("password-error").style.display="block";
-    // rode flits
     const flash=document.getElementById("red-flash");
     flash.classList.add("active");
     setTimeout(()=>{flash.classList.remove("active");},450);
@@ -221,7 +212,7 @@ function nextLevel(){
 function showSequence(){
   let delay=0;
   sequence.forEach((btn,i)=>{
-    setTimeout(()=>{activateButton(btn);playSound(btn)},i*500); // dubbel tempo
+    setTimeout(()=>{activateButton(btn);playSound(btn)},i*500);
   });
   setTimeout(()=>{document.getElementById("status").textContent="Jouw beurt";},sequence.length*500);
 }
