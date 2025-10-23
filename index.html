@@ -34,16 +34,15 @@ body{
 }
 #red-eye{
   position: fixed;
-  width: 30px;              
-  height: 30px;
+  width: 25px;
+  height: 25px;
   border-radius: 50%;
-  background: rgba(255,50,50,0.85); /* fel rood */
-  box-shadow: 0 0 12px rgba(255,50,50,0.6);
-  filter: blur(0px);        /* scherp */
+  background: radial-gradient(circle, rgba(255,0,0,1) 0%, rgba(255,40,40,0.6) 35%, rgba(120,0,0,0.2) 65%, transparent 100%);
+  box-shadow: 0 0 15px 5px rgba(255,0,0,0.25);
   opacity: 0;
   z-index: 9999;
   pointer-events: none;
-  transition: opacity 3s ease; /* langzaam knipperen */
+  transition: opacity 3s ease;
 }
 #password-screen{
   position:fixed; inset:0; display:flex; flex-direction:column;
